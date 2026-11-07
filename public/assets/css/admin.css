@@ -1,0 +1,235 @@
+/* KMG stav – správa webu (fotky, ponuky, cenník, firma) */
+html:has(body.admin) { scroll-behavior: auto; }
+.admin { background: var(--kamen); padding-bottom: 5.5rem; }
+@media (min-width: 48rem) { .admin { padding-bottom: 2rem; } }
+.admin .hlavicka { background: var(--biela); }
+.hlavicka__vpravo { display: flex; align-items: center; gap: 1rem; }
+.nazov-spravy { font-weight: 600; color: var(--bridlica); }
+[hidden] { display: none !important; }
+
+.admin h1 { font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(2.1rem, 8vw, 3rem); line-height: 1; margin: 1.75rem 0 0.75rem; }
+.admin h2 { font-family: var(--f-nadpis); font-weight: 700; font-size: 1.75rem; line-height: 1.1; margin: 2.25rem 0 1rem; }
+.napoveda { color: var(--bridlica); max-width: 42rem; margin: 0 0 1.5rem; }
+
+/* Formuláre */
+label { font-weight: 500; font-size: 0.95rem; }
+input:not([type='checkbox']):not([type='file']):not([type='radio']), select, textarea {
+  display: block; width: 100%; margin-top: 0.3rem;
+  min-height: 3rem; padding: 0.6rem 0.75rem;
+  font: 400 1rem/1.3 var(--f-text); color: var(--grafit);
+  background: var(--biela); border: 1.5px solid #c9c7c1; border-radius: 3px;
+}
+textarea { resize: vertical; min-height: 5rem; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--grafit); box-shadow: 0 0 0 3px rgba(209, 39, 42, 0.25); }
+.polia { display: grid; gap: 1rem; }
+@media (min-width: 40rem) { .polia { grid-template-columns: repeat(2, 1fr); } .polia .cela { grid-column: 1 / -1; } }
+@media (min-width: 64rem) { .polia { grid-template-columns: repeat(3, 1fr); } }
+.zaskrtavatko { display: flex; align-items: center; gap: 0.6rem; min-height: 3rem; align-self: end; cursor: pointer; }
+.zaskrtavatko input { width: 1.35rem; height: 1.35rem; accent-color: var(--cervena); }
+.chyba { color: var(--cervena-tmava); font-weight: 500; min-height: 1.5em; margin: 0.5rem 0; }
+.tlacidlo--zmazat { background: transparent; color: var(--cervena-tmava); border-color: transparent; }
+.tlacidlo--zmazat:hover { background: #f8e3e3; color: var(--cervena-tmava); }
+.tlacidlo[disabled] { opacity: 0.55; cursor: progress; }
+
+/* Prihlásenie */
+.prihlasenie { max-width: 26rem; padding-top: 2rem; }
+.prihlasenie form { display: grid; gap: 0.25rem; background: var(--biela); padding: 1.5rem; border-top: 4px solid var(--cervena); }
+.prihlasenie .tlacidlo { width: 100%; }
+
+/* Karty – dole na mobile, hore na počítači */
+.karty {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: repeat(var(--pocet, 4), 1fr);
+  background: var(--grafit); padding-bottom: env(safe-area-inset-bottom);
+}
+.karty a {
+  display: grid; justify-items: center; gap: 0.15rem; padding: 0.55rem 0.25rem 0.6rem;
+  color: #cfcdc8; text-decoration: none; font-size: 0.8rem; font-weight: 500;
+}
+.karty svg { width: 1.5rem; height: 1.5rem; }
+.karty a[aria-current='page'] { color: var(--biela); box-shadow: inset 0 3px 0 var(--cervena); }
+@media (min-width: 48rem) {
+  .karty { position: static; display: flex; justify-content: center; gap: 0.5rem; padding: 0; }
+  .karty a { display: flex; align-items: center; gap: 0.5rem; padding: 0.9rem 1.25rem; font-size: 1rem; }
+  .karty svg { width: 1.25rem; height: 1.25rem; }
+  .karty a[aria-current='page'] { box-shadow: inset 0 -3px 0 var(--cervena); }
+}
+
+.riadok-nadpis { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; }
+.riadok-nadpis h1, .riadok-nadpis h2 { margin-bottom: 0.75rem; }
+.riadok-nadpis select { width: auto; margin: 0; }
+
+/* Fotky */
+.vyber-kategorie { border: 0; padding: 0; margin: 0 0 1.25rem; }
+.vyber-kategorie legend { font-weight: 600; margin-bottom: 0.6rem; }
+.cipy { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.cipy label { position: relative; }
+.cipy input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.cipy span {
+  display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.4rem 1rem; border-radius: 999px;
+  background: var(--biela); border: 1.5px solid #c9c7c1; font-weight: 500;
+}
+.cipy input:checked + span { background: var(--grafit); color: var(--biela); border-color: var(--grafit); }
+.cipy input:focus-visible + span { outline: 3px solid var(--cervena); outline-offset: 2px; }
+.pridat-fotky { width: 100%; min-height: 4rem; font-size: 1.15rem; position: relative; }
+@media (min-width: 40rem) { .pridat-fotky { width: auto; padding: 0 2.5rem; } }
+.pridat-fotky input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.pridat-fotky svg { width: 1.4rem; height: 1.4rem; }
+
+.fronta { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.5rem; }
+.fronta li { display: grid; grid-template-columns: 3.5rem 1fr; gap: 0.75rem; align-items: center; background: var(--biela); padding: 0.5rem; }
+.fronta img { width: 3.5rem; height: 3.5rem; object-fit: cover; background: var(--kamen); }
+.fronta .stav { font-size: 0.9rem; color: var(--bridlica); }
+.fronta .stav--ok { color: #2d6a3e; font-weight: 600; }
+.fronta .stav--chyba { color: var(--cervena-tmava); font-weight: 600; }
+.fronta progress { width: 100%; height: 0.4rem; accent-color: var(--cervena); }
+
+.admin-mriezka { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+@media (min-width: 40rem) { .admin-mriezka { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 64rem) { .admin-mriezka { grid-template-columns: repeat(5, 1fr); } }
+.admin-mriezka figure { margin: 0; background: var(--biela); display: grid; }
+.admin-mriezka img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.admin-mriezka figcaption { display: flex; justify-content: space-between; align-items: center; gap: 0.25rem; padding: 0.3rem 0.3rem 0.3rem 0.6rem; font-size: 0.85rem; }
+.admin-mriezka button { min-height: 2.5rem; padding: 0 0.6rem; border: 0; background: transparent; color: var(--cervena-tmava); font: 600 0.85rem var(--f-text); cursor: pointer; border-radius: 3px; }
+.admin-mriezka button.potvrdit { background: var(--cervena); color: var(--biela); }
+.prazdne-admin { grid-column: 1 / -1; padding: 1.5rem; border: 2px dashed #c9c7c1; color: var(--bridlica); text-align: center; margin: 0; }
+
+/* Zoznam ponúk */
+.hladat { margin-bottom: 1rem; }
+.zoznam-ponuk { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+.zoznam-ponuk button {
+  width: 100%; text-align: left; cursor: pointer; border: 0; background: var(--biela); color: inherit;
+  display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; padding: 0.9rem 1rem; font: inherit;
+  border-left: 4px solid transparent;
+}
+.zoznam-ponuk button:hover { border-left-color: var(--cervena); }
+.zoznam-ponuk .cislo { font-weight: 600; }
+.zoznam-ponuk .suma { font-weight: 600; text-align: right; white-space: nowrap; }
+.zoznam-ponuk .predmet { color: var(--bridlica); font-size: 0.92rem; }
+.zoznam-ponuk .meta { text-align: right; font-size: 0.85rem; color: var(--bridlica); white-space: nowrap; }
+.stitok { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--kamen); margin-left: 0.4rem; }
+.stitok[data-stav='odoslaná'] { background: #e5ecf4; color: #2b4a6b; }
+.stitok[data-stav='prijatá'] { background: #e2f0e5; color: #2d6a3e; }
+.stitok[data-stav='zamietnutá'] { background: #f5e1e1; color: var(--cervena-tmava); }
+
+/* Editor ponuky */
+.spat { margin-top: 1.25rem; background: none; border: 0; padding: 0.5rem 0; font: 500 1rem var(--f-text); color: var(--grafit); cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em; }
+.skupina { border: 0; padding: 1.25rem; margin: 0 0 1rem; background: var(--biela); }
+.skupina legend { float: left; width: 100%; font-family: var(--f-nadpis); font-weight: 700; font-size: 1.45rem; margin-bottom: 0.9rem; padding: 0; }
+.skupina > :not(legend) { clear: both; }
+
+.polozky { list-style: none; padding: 0; margin: 0 0 1rem; counter-reset: p; }
+.polozky li {
+  counter-increment: p; display: grid; gap: 0.5rem; grid-template-columns: 1fr 1fr;
+  padding: 0.9rem 0; border-bottom: 1px solid var(--linka);
+}
+.polozky li:first-child { border-top: 1px solid var(--linka); }
+.polozky .nazov { grid-column: 1 / -1; }
+.polozky label { font-size: 0.82rem; color: var(--bridlica); font-weight: 500; }
+.polozky input, .polozky select { min-height: 2.75rem; }
+.polozky .spolu { display: flex; flex-direction: column; justify-content: flex-end; font-weight: 600; font-size: 1.05rem; padding-bottom: 0.6rem; }
+.polozky .spolu small { font-size: 0.82rem; color: var(--bridlica); font-weight: 500; }
+.polozky .odstranit { grid-column: 1 / -1; align-self: end; justify-self: end; min-height: 2.75rem; border: 0; background: transparent; color: var(--cervena-tmava); font: 600 0.9rem var(--f-text); cursor: pointer; padding: 0 0.5rem; }
+.polozky-hlavicka { display: none; }
+@media (min-width: 56rem) {
+  .polozky-hlavicka, .polozky li { grid-template-columns: minmax(0, 4fr) 6.5rem 6rem 8rem 8rem 5.5rem; gap: 0.6rem; align-items: center; }
+  .polozky-hlavicka { display: grid; font-size: 0.85rem; color: var(--bridlica); padding-bottom: 0.4rem; }
+  .polozky li { padding: 0.4rem 0; }
+  .polozky .nazov, .polozky .odstranit { grid-column: auto; }
+  .polozky label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .polozky input, .polozky select { margin-top: 0 !important; }
+  .polozky .spolu { padding: 0; text-align: right; }
+  .polozky .spolu small { display: none; }
+}
+.prazdne-polozky { color: var(--bridlica); margin: 0 0 1rem; }
+
+.sucty { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 0; margin: 1.5rem 0 0; max-width: 26rem; margin-left: auto; }
+.sucty dt { color: var(--bridlica); }
+.sucty dd { margin: 0; padding-left: 1.5rem; text-align: right; font-weight: 500; }
+.sucty .spolu { font-family: var(--f-nadpis); font-weight: 800; font-size: 1.9rem; color: var(--grafit); border-top: 2px solid var(--grafit); padding-top: 0.4rem; margin-top: 0.3rem; }
+
+.lista-akcii {
+  position: sticky; bottom: 4.6rem; z-index: 10; display: flex; flex-wrap: wrap; gap: 0.5rem;
+  background: var(--biela); padding: 0.75rem; margin: 1rem 0 0; border-top: 1px solid var(--linka);
+}
+@media (min-width: 48rem) { .lista-akcii { bottom: 0; } }
+.lista-akcii .tlacidlo { flex: 1 1 auto; }
+@media (min-width: 48rem) { .lista-akcii .tlacidlo { flex: 0 0 auto; } .lista-akcii .tlacidlo--zmazat { margin-left: auto; } }
+
+.dalsie-akcie { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; margin: 0.5rem 0 0; }
+.lista-akcii .tlacidlo[data-tlacit] { flex: 1 1 auto; }
+
+/* Cenník */
+.cennik-skupina { background: var(--biela); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.cennik-skupina h2 { margin: 0.25rem 0 0.75rem; font-size: 1.5rem; }
+.cennik-riadok { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; padding: 0.75rem 0; border-top: 1px solid var(--linka); align-items: end; }
+.cennik-riadok .nazov { grid-column: 1 / -1; }
+.cennik-riadok label { font-size: 0.82rem; color: var(--bridlica); }
+.cennik-riadok input, .cennik-riadok select { min-height: 2.75rem; }
+.cennik-riadok input.bez-ceny { border-color: var(--cervena); background: #fdf3f3; }
+.cennik-riadok button { min-height: 2.75rem; border: 0; background: transparent; color: var(--cervena-tmava); font: 600 0.9rem var(--f-text); cursor: pointer; }
+@media (min-width: 48rem) { .cennik-riadok { grid-template-columns: minmax(0, 1fr) 7rem 9rem auto; } .cennik-riadok .nazov { grid-column: auto; } }
+.pridat-polozku { margin-top: 0.75rem; }
+.nova-kategoria { background: var(--biela); padding: 1rem 1.25rem; }
+.riadok-vstup { display: flex; gap: 0.5rem; align-items: stretch; margin-top: 0.3rem; }
+.riadok-vstup input { margin-top: 0 !important; }
+
+/* Výber z cenníka */
+.vyber { border: 0; padding: 0; width: min(36rem, 100vw); max-width: 100vw; height: min(44rem, 100dvh); max-height: 100dvh; background: var(--kamen); }
+.vyber::backdrop { background: rgba(30, 30, 28, 0.6); }
+.vyber[open] { display: flex; flex-direction: column; }
+.vyber__hore { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--biela); }
+.vyber__hore h2 { margin: 0; font-size: 1.5rem; }
+.vyber .hladat { margin: 0.75rem 1rem; width: auto; }
+.vyber__zoznam { overflow-y: auto; padding: 0 1rem 1rem; }
+.vyber__zoznam h3 { font-size: 0.95rem; color: var(--bridlica); margin: 1rem 0 0.4rem; }
+.vyber__zoznam button {
+  width: 100%; display: flex; justify-content: space-between; gap: 1rem; text-align: left; cursor: pointer;
+  padding: 0.85rem 1rem; margin-bottom: 0.35rem; background: var(--biela); border: 0; border-left: 4px solid transparent;
+  font: 400 1rem var(--f-text); color: var(--grafit);
+}
+.vyber__zoznam button:hover, .vyber__zoznam button:focus-visible { border-left-color: var(--cervena); }
+.vyber__zoznam .cena { white-space: nowrap; font-weight: 600; }
+.vyber__zoznam .cena.nula { color: var(--cervena-tmava); font-weight: 500; }
+.vyber__zoznam .pridane { color: #2d6a3e; }
+
+/* Oznámenia */
+.oznam {
+  position: fixed; left: 50%; bottom: 6rem; transform: translateX(-50%); z-index: 50;
+  background: var(--grafit); color: var(--biela); padding: 0.75rem 1.25rem; border-radius: 3px;
+  font-weight: 500; max-width: calc(100vw - 2rem); opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.oznam.viditelny { opacity: 1; }
+.oznam.chybne { background: var(--cervena-tmava); }
+@media (min-width: 48rem) { .oznam { bottom: 2rem; } }
+
+/* Tlač ponuky */
+#tlac { display: none; }
+@media print {
+  @page { size: A4; margin: 14mm 14mm 16mm; }
+  body.admin { background: #fff; padding: 0; }
+  #aplikacia, .oznam, dialog { display: none !important; }
+  #tlac { display: block; font: 10pt/1.4 var(--f-text); color: #000; }
+}
+#tlac .t-hlava { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; padding-bottom: 5mm; border-bottom: 1.2mm solid var(--cervena); }
+#tlac .t-hlava img { height: 22mm; width: auto; }
+#tlac .t-firma { text-align: right; font-size: 9pt; line-height: 1.45; }
+#tlac .t-firma strong { font-size: 11pt; }
+#tlac h1 { font-family: var(--f-nadpis); font-weight: 800; font-size: 24pt; margin: 7mm 0 1mm; line-height: 1; }
+#tlac .t-meta { color: #444; margin: 0 0 6mm; }
+#tlac .t-strany { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-bottom: 6mm; }
+#tlac .t-strany h2 { font-size: 8.5pt; font-weight: 600; color: #555; margin: 0 0 1mm; font-family: var(--f-text); }
+#tlac .t-strany p { margin: 0; }
+#tlac .t-predmet { margin: 0 0 4mm; font-size: 11pt; }
+#tlac table { width: 100%; border-collapse: collapse; }
+#tlac th { text-align: left; font-size: 8.5pt; font-weight: 600; color: #444; border-bottom: 0.4mm solid #000; padding: 1.5mm 1.5mm; }
+#tlac td { padding: 1.8mm 1.5mm; border-bottom: 0.2mm solid #ccc; vertical-align: top; }
+#tlac .c { text-align: right; white-space: nowrap; }
+#tlac tr { break-inside: avoid; }
+#tlac .t-sucty { width: 75mm; margin: 5mm 0 0 auto; border-collapse: collapse; }
+#tlac .t-sucty td { border: 0; padding: 1mm 1.5mm; }
+#tlac .t-sucty .spolu td { font-weight: 700; font-size: 13pt; border-top: 0.5mm solid #000; padding-top: 2mm; }
+#tlac .t-poznamka { margin-top: 7mm; white-space: pre-line; }
+#tlac .t-pata { margin-top: 8mm; font-size: 9pt; color: #444; }
+#tlac .t-podpis { margin-top: 16mm; display: flex; justify-content: flex-end; }
+#tlac .t-podpis span { border-top: 0.3mm solid #000; padding-top: 1.5mm; width: 60mm; text-align: center; font-size: 9pt; }

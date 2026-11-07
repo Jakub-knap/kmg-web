@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Realizácie – KMG stav</title>
+  <meta name="description" content="Fotky striech, chát, prístreškov, altánkov, pergol a drevodomov, ktoré postavila firma KMG stav.">
+  <meta name="theme-color" content="#2f2e2c">
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body class="galeria-stranka">
+  <header class="hlavicka">
+    <div class="obal">
+      <a class="logo" href="/" aria-label="KMG stav – úvod"><img src="/assets/img/logo.png" alt="KMG" width="621" height="344"></a>
+      <nav class="menu" aria-label="Hlavné menu">
+        <a href="/#sluzby">Čo robíme</a>
+        <a href="/galeria" aria-current="page">Realizácie</a>
+        <a href="/#kontakt">Kontakt</a>
+        <a class="tlacidlo tlacidlo--male" href="tel:+421951259327">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
+          Zavolať
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="obal hlava">
+      <h1>Realizácie</h1>
+      <p>Fotky z našich stavieb. Ťuknite na fotku a zväčší sa.</p>
+      <div class="filtre" role="group" aria-label="Vybrať druh stavby" data-filtre>
+        <button type="button" aria-pressed="true" data-kategoria="">Všetko</button>
+        <button type="button" aria-pressed="false" data-kategoria="strechy">Strechy</button>
+        <button type="button" aria-pressed="false" data-kategoria="chaty">Chaty</button>
+        <button type="button" aria-pressed="false" data-kategoria="pristresky">Prístrešky</button>
+        <button type="button" aria-pressed="false" data-kategoria="altanky">Altánky</button>
+        <button type="button" aria-pressed="false" data-kategoria="pergoly">Pergoly</button>
+        <button type="button" aria-pressed="false" data-kategoria="drevodomy">Drevodomy</button>
+        <button type="button" aria-pressed="false" data-kategoria="interier">Interiér a pivnice</button>
+      </div>
+    </div>
+    <div class="obal">
+      <div class="mriezka" data-galeria>
+        <p class="prazdne">Načítavam fotky…</p>
+      </div>
+    </div>
+    <section class="sekcia">
+      <div class="obal">
+        <h2>Chcete niečo podobné?</h2>
+        <div class="akcie">
+          <a class="tlacidlo" href="tel:+421951259327">Zavolať 0951 259 327</a>
+          <a class="tlacidlo tlacidlo--obrys" href="mailto:kmg.stav@gmail.com">Napísať e-mail</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pata">
+    <div class="obal">
+      <div>
+        <p><strong>KMG stav</strong></p>
+        <p>IČO: 12 345 678, DIČ: 1234567890</p>
+      </div>
+      <p>© <span data-rok>2026</span> KMG stav. <a href="/admin" rel="nofollow">Správa webu</a></p>
+    </div>
+  </footer>
+
+  <dialog class="lupa" aria-label="Zväčšená fotka">
+    <div class="lupa__hore"><span data-lupa-pocet></span><button type="button" data-lupa-zavriet>Zavrieť</button></div>
+    <div class="lupa__foto"><img alt=""></div>
+    <div class="lupa__dole"><button type="button" data-lupa-spat aria-label="Predchádzajúca fotka">Predošlá</button><button type="button" data-lupa-dalej aria-label="Ďalšia fotka">Ďalšia</button></div>
+  </dialog>
+
+  <script src="/assets/js/site.js" defer></script>
+</body>
+</html>

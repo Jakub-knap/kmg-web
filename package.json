@@ -1,0 +1,13 @@
+{
+  "name": "kmg-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Web KMG stav – strechy a stavby z dreva, galéria a cenové ponuky",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.3.0"
+  }
+}
