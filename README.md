@@ -75,7 +75,7 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 - Statické stránky v `public/` (HTML, CSS, JS bez buildu), funkcie vo `api/` (Vercel Functions, Node).
 - Dáta vo Vercel Blob: `galeria/<kategoria>/<id>.jpg`, `nahlady/…` (zmenšeniny), `nastavenia/*.json`,
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
-- Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 30 dní.
+- Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.
 - Fotka po zmenšení môže mať najviac 4 MB (limit Vercel funkcie je 4,5 MB).
 - Bezplatný plán Vercel Hobby je podľa podmienok Vercelu len na nekomerčné použitie. Pre firemný web
