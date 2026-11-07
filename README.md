@@ -6,7 +6,7 @@ Web pre KMG stav: strechy, chaty, prístrešky, altánky, pergoly a drevodomy.
 |---|---|
 | `kmg.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
 | `kmg.sk/galeria` | Všetky fotky s filtrom podľa druhu stavby |
-| `kmg.sk/admin` | Správa webu (na heslo): **Fotky**, **Ponuky**, **Cenník**, **Firma** |
+| `kmg.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník a údaje na ponuke sú v Ponukách. |
 | `kmg.sk/fotky`, `kmg.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
 ## Nasadenie (raz, asi 15 minút)
@@ -47,8 +47,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
 ## Čo ešte doplniť
 - **IČO a DIČ sú vymyslené.** Opravte ich v `public/index.html` a `public/galeria.html` (päta stránky)
-  a v správe webu v záložke **Firma** (tie sa tlačia na ponuky).
-- **Adresa firmy** – v záložke Firma.
+  a v správe webu v **Ponuky → Údaje na ponuke** (tie sa tlačia na ponuky).
+- **Adresa** – v **Ponuky → Údaje na ponuke**.
 - **Facebook** – v `public/index.html` je zatiaľ odkaz na vyhľadávanie „KMG stav“.
   Nahraďte ho priamou adresou stránky (napr. `https://www.facebook.com/...`).
 - **Ceny v cenníku** sú nastavené na 0 €. Položky bez ceny sú v Cenníku zvýraznené.
@@ -59,8 +59,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Ponuky:** Nová ponuka → zákazník → Pridať z cenníka (alebo vlastnú položku) → množstvá → Uložiť.
   **Uložiť ako PDF** otvorí tlač, kde zvolíte „Uložiť ako PDF“ a pošlete ho zákazníkovi.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
-- **Cenník:** vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
-- **Firma:** údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
+- **Cenník** (v Ponukách): vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
+- **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
 
 ## Aplikácia v mobile (PWA)
 Správa webu sa dá nainštalovať na plochu telefónu ako aplikácia s ikonou KMG:

@@ -103,6 +103,15 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 .prazdne-admin { grid-column: 1 / -1; padding: 1.5rem; border: 2px dashed #c9c7c1; color: var(--bridlica); text-align: center; margin: 0; }
 
 /* Zoznam ponúk */
+.podmenu { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0 1rem; }
+.podmenu a {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 2.6rem; padding: .35rem .9rem;
+  background: var(--biela); border: 1.5px solid #c9c7c1; border-radius: 999px;
+  color: var(--grafit); text-decoration: none; font-weight: 500; font-size: .95rem;
+}
+.podmenu a:hover { border-color: var(--grafit); }
+.podmenu svg { width: 1.1rem; height: 1.1rem; }
+a.spat { display: inline-block; }
 .hladat { margin-bottom: 1rem; }
 .zoznam-ponuk { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
 .zoznam-ponuk button {

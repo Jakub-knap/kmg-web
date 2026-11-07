@@ -151,7 +151,7 @@
     $('[data-odhlasit]').hidden = false;
     const admin = rola === 'admin';
     $$('[data-len-admin]').forEach((a) => { a.hidden = !admin; });
-    $('.karty').style.setProperty('--pocet', admin ? 4 : 1);
+    $('.karty').style.setProperty('--pocet', admin ? 2 : 1);
     ukazKartu();
     nacitajFotky();
     if (admin) {
@@ -179,8 +179,9 @@
     if (!stav.rola) return;
     const k = aktualnaKarta();
     $$('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== k; });
+    const vNav = k === 'cennik' || k === 'firma' ? 'ponuky' : k;
     $$('[data-karta]').forEach((a) => {
-      if (a.dataset.karta === k) a.setAttribute('aria-current', 'page');
+      if (a.dataset.karta === vNav) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
     window.scrollTo(0, 0);
@@ -503,7 +504,7 @@
     try {
       await ulozNastavenia();
       vyplnFirmu();
-      oznam('Údaje o firme uložené');
+      oznam('Údaje na ponuke uložené');
     } catch (err) {
       stav.nastavenia.firma = zaloha;
       oznam(err.message, true);

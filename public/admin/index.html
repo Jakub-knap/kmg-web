@@ -62,14 +62,6 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h7M9 16h7M9 8h3" stroke="currentColor" stroke-width="2"/></svg>
           Ponuky
         </a>
-        <a href="#cennik" data-karta="cennik" data-len-admin>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>
-          Cenník
-        </a>
-        <a href="#firma" data-karta="firma" data-len-admin>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-          Firma
-        </a>
       </nav>
 
       <!-- FOTKY -->
@@ -103,6 +95,10 @@
             <h1>Cenové ponuky</h1>
             <button type="button" class="tlacidlo" data-nova-ponuka>Nová ponuka</button>
           </div>
+          <nav class="podmenu" aria-label="Nastavenia ponúk">
+            <a href="#cennik"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>Cenník</a>
+            <a href="#firma"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2"/></svg>Údaje na ponuke</a>
+          </nav>
           <input type="search" class="hladat" placeholder="Hľadať podľa zákazníka, čísla alebo predmetu" aria-label="Hľadať ponuku" data-hladat-ponuku>
           <ul class="zoznam-ponuk" data-zoznam-ponuk></ul>
         </div>
@@ -177,6 +173,7 @@
 
       <!-- CENNÍK -->
       <main class="obal panel" data-panel="cennik" hidden>
+        <a class="spat" href="#ponuky">Späť na ponuky</a>
         <h1>Cenník</h1>
         <p class="napoveda">Tu si nastavíte vlastné položky a ceny bez DPH. Pri tvorbe ponuky ich vyberiete jedným ťuknutím a cenu môžete v ponuke ešte zmeniť.</p>
         <div data-cennik></div>
@@ -189,7 +186,8 @@
 
       <!-- FIRMA -->
       <main class="obal panel" data-panel="firma" hidden>
-        <h1>Údaje o firme</h1>
+        <a class="spat" href="#ponuky">Späť na ponuky</a>
+        <h1>Údaje na ponuke</h1>
         <p class="napoveda">Tieto údaje sa tlačia v hlavičke cenovej ponuky.</p>
         <form data-firma novalidate>
           <div class="polia">
