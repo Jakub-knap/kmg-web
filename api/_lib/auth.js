@@ -6,7 +6,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 const COOKIE = 'kmg_s';
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 dní
+const MAX_AGE = 60 * 60 * 24 * 180; // 180 dní – v aplikácii sa netreba prihlasovať stále dokola
 
 function secret() {
   return process.env.SESSION_SECRET || `kmg:${process.env.ADMIN_PASSWORD || ''}:${process.env.FOTKY_PASSWORD || ''}`;

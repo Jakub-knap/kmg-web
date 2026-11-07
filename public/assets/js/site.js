@@ -33,7 +33,10 @@
       img.alt = NAZVY[f.kategoria] || 'Realizácia';
       img.loading = 'lazy';
       img.decoding = 'async';
-      btn.append(img);
+      const popis = document.createElement('span');
+      popis.className = 'popis';
+      popis.textContent = NAZVY[f.kategoria] || 'Realizácia';
+      btn.append(img, popis);
       btn.addEventListener('click', () => otvor(i));
       mriezka.append(btn);
     });

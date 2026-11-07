@@ -2,124 +2,278 @@
 <html lang="sk">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>KMG stav – strechy, chaty, pergoly a drevodomy</title>
   <meta name="description" content="KMG stav robí nové strechy a rekonštrukcie striech, chaty, drevodomy, prístrešky, altánky a pergoly. Zavolajte 0951 259 327.">
-  <meta property="og:title" content="KMG stav – strechy a stavby z dreva">
+  <meta property="og:title" content="KMG stav – strecha nad hlavou">
   <meta property="og:description" content="Nové strechy a rekonštrukcie, chaty, drevodomy, prístrešky, altánky a pergoly.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="/assets/img/logo.png">
-  <meta name="theme-color" content="#2f2e2c">
+  <meta name="theme-color" content="#1f1e1c">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/home.css">
 </head>
-<body>
+<body class="domov">
   <header class="hlavicka">
     <div class="obal">
-      <a class="logo" href="/" aria-label="KMG stav – úvod"><img src="/assets/img/logo.png" alt="KMG" width="621" height="344"></a>
+      <a class="logo" href="/" aria-label="KMG stav – úvod">
+        <img class="logo-svetle" src="/assets/img/logo-svetle.png" alt="" width="621" height="344">
+        <img class="logo-tmave" src="/assets/img/logo.png" alt="KMG" width="621" height="344">
+      </a>
       <nav class="menu" aria-label="Hlavné menu">
         <a href="#sluzby">Čo robíme</a>
-        <a href="/galeria">Realizácie</a>
+        <a href="#realizacie">Realizácie</a>
         <a href="#kontakt">Kontakt</a>
-        <a class="tlacidlo tlacidlo--male" href="tel:+421951259327">
+        <a class="tlacidlo tlacidlo--male" href="tel:+421951259327" data-magnet>
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
           Zavolať
         </a>
       </nav>
     </div>
+    <span class="postup-lista" aria-hidden="true"></span>
   </header>
 
   <main>
-    <section class="uvod">
+    <!-- Úvod s interaktívnym domom -->
+    <section class="hero" data-hero>
       <div class="obal">
-        <figure class="stit" aria-hidden="true">
-          <div class="stit__plocha" data-uvodna-foto>
-            <svg viewBox="0 0 100 90" preserveAspectRatio="xMidYMid slice">
-              <defs>
-                <pattern id="skridla" width="11" height="16" patternUnits="userSpaceOnUse">
-                  <rect width="11" height="16" fill="#1f1e1c"/>
-                  <path d="M0.3 0V5A5.2 3 0 0 0 10.7 5V0z" fill="#373633"/>
-                  <path d="M-5.2 8V13A5.2 3 0 0 0 5.2 13V8zM5.8 8V13A5.2 3 0 0 0 16.2 13V8z" fill="#3e3d3a"/>
-                </pattern>
-              </defs>
-              <rect width="100" height="90" fill="url(#skridla)"/>
-            </svg>
-          </div>
-          <svg class="stit__strecha" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polyline points="-7,43 50,-5.5 107,43"/>
-          </svg>
-        </figure>
-        <div>
-          <h1>Strechy a stavby z dreva</h1>
-          <p>Staviame nové strechy a robíme rekonštrukcie starých. Postavíme aj chatu, drevodom, prístrešok, altánok alebo pergolu.</p>
+        <div class="hero__text">
+          <h1 data-rozdel>
+            <span class="riadok">Strecha nad hlavou.</span>
+            <span class="riadok riadok--obrys">Od krovu po škridlu.</span>
+          </h1>
+          <p class="hero__popis">Nové strechy a rekonštrukcie, chaty, drevodomy, prístrešky, altánky a pergoly.</p>
           <div class="akcie">
-            <a class="tlacidlo" href="tel:+421951259327">
+            <a class="tlacidlo" href="tel:+421951259327" data-magnet>
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
               0951 259 327
             </a>
-            <a class="tlacidlo tlacidlo--obrys" href="/galeria">Pozrieť realizácie</a>
+            <a class="tlacidlo tlacidlo--obrys" href="#realizacie" data-magnet>Pozrieť realizácie</a>
+          </div>
+        </div>
+
+        <div class="dom" data-dom>
+          <div class="dom__scena">
+            <svg viewBox="0 0 600 540" role="img" aria-labelledby="dom-popis">
+              <title id="dom-popis">Kresba domu. Typ strechy zmeníte tlačidlami pod ňou, sklon potiahnutím červeného bodu.</title>
+              <defs>
+                <pattern id="bobrovka" width="22" height="28" patternUnits="userSpaceOnUse">
+                  <rect width="22" height="28" fill="#161514"/>
+                  <path d="M0.6 0V10A10.4 6 0 0 0 21.4 10V0z" fill="#3b3a37"/>
+                  <path d="M-10.4 14V24A10.4 6 0 0 0 10.4 24V14zM11.6 14V24A10.4 6 0 0 0 32.4 24V14z" fill="#45443f"/>
+                </pattern>
+                <clipPath id="strecha-orez"><path data-orez/></clipPath>
+              </defs>
+              <line class="ciara ciara--zem" x1="30" y1="470" x2="570" y2="470" pathLength="1" data-faza="zem"/>
+              <path class="ciara" d="M130 470V300H470V470" pathLength="1" data-faza="steny"/>
+              <path class="ciara ciara--tenka" d="M270 470V392H330V470" pathLength="1" data-faza="okna"/>
+              <path class="ciara ciara--tenka" d="M165 330H225V382H165ZM195 330V382M165 356H225" pathLength="1" data-faza="okna"/>
+              <path class="ciara ciara--tenka" d="M375 330H435V382H375ZM405 330V382M375 356H435" pathLength="1" data-faza="okna"/>
+              <path class="krov" pathLength="1" data-krov/>
+              <path class="krov krov--tenky" pathLength="1" data-vaznik/>
+              <g clip-path="url(#strecha-orez)"><rect x="70" width="460" fill="url(#bobrovka)" data-skridly/></g>
+              <path class="ciara ciara--obrys" data-obrys/>
+              <polyline class="hreben" pathLength="1" data-hreben/>
+              <g class="koty" data-koty>
+                <path data-kota-sirka/>
+                <text text-anchor="middle" data-kota-sirka-text></text>
+                <path data-kota-vyska/>
+                <text text-anchor="middle" data-kota-vyska-text></text>
+                <text text-anchor="middle" class="koty__sklon" data-sklon></text>
+              </g>
+              <g class="uchop" data-uchop tabindex="0" role="slider" aria-label="Výška strechy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                <circle r="34" class="uchop__zona"/>
+                <circle r="11" class="uchop__pulz"/>
+                <circle r="10" class="uchop__bod"/>
+              </g>
+              <g class="napoveda" data-napoveda>
+                <rect x="-74" y="-58" width="148" height="34" rx="17"/>
+                <text y="-35" text-anchor="middle">Potiahni ↕</text>
+              </g>
+            </svg>
+          </div>
+          <div class="typy" role="group" aria-label="Typ strechy" data-typy>
+            <button type="button" data-typ="sedlova" aria-pressed="true">Sedlová</button>
+            <button type="button" data-typ="valbova" aria-pressed="false">Valbová</button>
+            <button type="button" data-typ="pultova" aria-pressed="false">Pultová</button>
+            <button type="button" data-typ="plocha" aria-pressed="false">Plochá</button>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="sekcia sekcia--tmava" id="sluzby" aria-labelledby="sluzby-nadpis">
+    <!-- Bežiaci pás -->
+    <div class="pas" aria-hidden="true">
+      <div class="pas__stopa" data-pas>
+        <span>strechy<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>chaty<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>prístrešky<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>altánky<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>pergoly<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>drevodomy<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span>pivnice<svg viewBox="0 0 40 24"><path d="M2 22 20 4l18 18" fill="none" stroke="currentColor" stroke-width="5"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Služby -->
+    <section class="sluzby-sekcia" id="sluzby" aria-labelledby="sluzby-nadpis">
       <div class="obal">
-        <h2 id="sluzby-nadpis">Čo robíme</h2>
-        <ul class="sluzby">
-          <li><strong>strechy</strong><span>Nové strechy aj rekonštrukcie: krov, fólia, laty, krytina, klampiarske práce a odkvapy.</span></li>
-          <li><strong>chaty</strong><span>Drevené chaty a chalupy, od krovu až po strechu.</span></li>
-          <li><strong>prístrešky</strong><span>Prístrešky na auto, na drevo alebo nad terasu.</span></li>
-          <li><strong>altánky</strong><span>Altánky do záhrady v rozmeroch podľa vás.</span></li>
-          <li><strong>pergoly</strong><span>Pergoly k domu aj samostatne stojace.</span></li>
-          <li><strong>drevodomy</strong><span>Drevené domy na mieru.</span></li>
-        </ul>
-        <p class="zima"><b>V zime pracujeme vo vnútri</b>Pivnice, interiéry a ďalšie práce s drevom, keď sa na streche robiť nedá.</p>
+        <div class="sekcia-hlava">
+          <h2 id="sluzby-nadpis" data-rozdel>Čo robíme</h2>
+          <p data-odhal>Od nového krovu cez krytinu až po odkvapy. A všetko, čo sa dá postaviť z dreva.</p>
+        </div>
+
+        <div class="karty-sluzieb">
+          <a class="karta" href="/galeria?kategoria=strechy" data-karta>
+            <svg class="ilu ilu--strecha" viewBox="0 0 160 110" aria-hidden="true">
+              <g class="ilu__strecha">
+                <path class="k c" pathLength="1" d="M14 62 80 16l66 46"/>
+                <path class="k t" pathLength="1" d="M42 50h76M56 40h48M68 31h24"/>
+              </g>
+              <path class="k" pathLength="1" d="M30 58v44h100V58"/>
+              <path class="k" pathLength="1" d="M108 40V22h12v26"/>
+              <path class="k" pathLength="1" d="M70 102V80h20v22M42 72h16v14H42zM102 72h16v14h-16z"/>
+            </svg>
+            <h3>Strechy</h3>
+            <p>Nové strechy aj rekonštrukcie: krov, fólia, laty, krytina, klampiarske práce a odkvapy.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta" href="/galeria?kategoria=chaty" data-karta>
+            <svg class="ilu ilu--chata" viewBox="0 0 160 110" aria-hidden="true">
+              <path class="k c" pathLength="1" d="M26 104 80 14l54 90"/>
+              <path class="k" pathLength="1" d="M46 104 80 48l34 56"/>
+              <path class="k" pathLength="1" d="M72 104V84h16v20M110 50V30h10v36"/>
+              <path class="k" pathLength="1" d="M18 104h124"/>
+              <g class="ilu__dym"><circle cx="115" cy="20" r="4"/><circle cx="121" cy="12" r="5"/><circle cx="114" cy="4" r="6"/></g>
+            </svg>
+            <h3>Chaty</h3>
+            <p>Drevené chaty a chalupy, od krovu až po strechu.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta" href="/galeria?kategoria=pristresky" data-karta>
+            <svg class="ilu ilu--pristresok" viewBox="0 0 160 110" aria-hidden="true">
+              <path class="k c" pathLength="1" d="M12 40 148 30"/>
+              <path class="k" pathLength="1" d="M24 40v64M136 32v72M24 50l112-8"/>
+              <g class="ilu__auto">
+                <path class="k" pathLength="1" d="M44 96V86l12-14h38l14 14v10z"/>
+                <circle class="k" pathLength="1" cx="60" cy="98" r="7"/>
+                <circle class="k" pathLength="1" cx="98" cy="98" r="7"/>
+              </g>
+              <path class="k" pathLength="1" d="M8 106h144"/>
+            </svg>
+            <h3>Prístrešky</h3>
+            <p>Prístrešky na auto, na drevo alebo nad terasu.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta" href="/galeria?kategoria=altanky" data-karta>
+            <svg class="ilu ilu--altanok" viewBox="0 0 160 110" aria-hidden="true">
+              <g class="ilu__strecha">
+                <path class="k c" pathLength="1" d="M26 50 80 18l54 32z"/>
+                <path class="k" pathLength="1" d="M80 18V6"/>
+              </g>
+              <path class="k" pathLength="1" d="M36 50v54M80 50v54M124 50v54M36 80h88M36 72v16M58 80v24M102 80v24"/>
+              <path class="k" pathLength="1" d="M20 104h120"/>
+              <g class="ilu__lampa"><path class="k" pathLength="1" d="M58 50v8"/><rect x="53" y="58" width="10" height="12" rx="2"/></g>
+            </svg>
+            <h3>Altánky</h3>
+            <p>Altánky do záhrady v rozmeroch podľa vás.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta" href="/galeria?kategoria=pergoly" data-karta>
+            <svg class="ilu ilu--pergola" viewBox="0 0 160 110" aria-hidden="true">
+              <path class="k" pathLength="1" d="M32 104V44M128 104V44M18 44h124M18 52h124"/>
+              <g class="ilu__lamely">
+                <path class="k c" pathLength="1" d="M30 36v8"/><path class="k c" pathLength="1" d="M50 36v8"/><path class="k c" pathLength="1" d="M70 36v8"/>
+                <path class="k c" pathLength="1" d="M90 36v8"/><path class="k c" pathLength="1" d="M110 36v8"/><path class="k c" pathLength="1" d="M130 36v8"/>
+              </g>
+              <path class="k" pathLength="1" d="M58 104V88h44v16M64 88V78h32v10"/>
+              <path class="k" pathLength="1" d="M10 104h140"/>
+            </svg>
+            <h3>Pergoly</h3>
+            <p>Pergoly k domu aj samostatne stojace.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta" href="/galeria?kategoria=drevodomy" data-karta>
+            <svg class="ilu ilu--drevodom" viewBox="0 0 160 110" aria-hidden="true">
+              <path class="k c" pathLength="1" d="M16 56 80 18l64 38"/>
+              <path class="k" pathLength="1" d="M28 50v54h104V50"/>
+              <path class="k t" pathLength="1" d="M44 60v44M60 52v52M100 52v52M116 60v44"/>
+              <rect class="ilu__okno" x="70" y="62" width="20" height="18"/>
+              <path class="k" pathLength="1" d="M70 62h20v18H70zM80 62v18"/>
+              <path class="k" pathLength="1" d="M18 104h124"/>
+            </svg>
+            <h3>Drevodomy</h3>
+            <p>Drevené domy na mieru.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+
+          <a class="karta karta--zima" href="/galeria?kategoria=interier" data-karta>
+            <div class="sneh" aria-hidden="true" data-sneh></div>
+            <svg class="ilu ilu--pivnica" viewBox="0 0 160 110" aria-hidden="true">
+              <path class="k" pathLength="1" d="M20 40h120M20 40v64h120V40"/>
+              <path class="k c" pathLength="1" d="M40 104V70a40 30 0 0 1 80 0v34"/>
+              <path class="k t" pathLength="1" d="M60 104V72M80 104V64M100 104V72"/>
+              <path class="k" pathLength="1" d="M10 40 80 12l70 28"/>
+            </svg>
+            <h3>V zime vo vnútri</h3>
+            <p>Pivnice, interiéry a ďalšie práce s drevom, keď sa na streche robiť nedá.</p>
+            <span class="odkaz">Pozrieť fotky</span>
+          </a>
+        </div>
       </div>
     </section>
 
-    <section class="sekcia" id="realizacie" aria-labelledby="realizacie-nadpis">
-      <div class="obal">
-        <h2 id="realizacie-nadpis">Realizácie</h2>
-        <div class="mriezka" data-galeria data-pocet="6">
-          <p class="prazdne">Načítavam fotky…</p>
+    <!-- Postup -->
+    <section class="postup-sekcia" aria-labelledby="postup-nadpis">
+      <div class="obal postup-mriezka">
+        <div class="postup-hlava">
+          <h2 id="postup-nadpis" data-rozdel>Ako to prebieha</h2>
+          <p data-odhal>Od prvého telefonátu po hotovú strechu.</p>
         </div>
-        <div class="pod-galeriou">
-          <a class="tlacidlo tlacidlo--obrys" href="/galeria">Všetky fotky</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="sekcia sekcia--kamen" aria-labelledby="postup-nadpis">
-      <div class="obal">
-        <h2 id="postup-nadpis">Ako to prebieha</h2>
-        <ol class="postup">
-          <li><h3>Zavoláte alebo napíšete</h3><p>Poviete nám, čo potrebujete. Pomôže aj pár fotiek strechy alebo miesta.</p></li>
-          <li><h3>Obhliadka</h3><p>Prídeme, pozrieme sa na miesto a všetko zameriame.</p></li>
-          <li><h3>Cenová ponuka</h3><p>Pripravíme ponuku s rozpisom prác a materiálu.</p></li>
-          <li><h3>Realizácia</h3><p>Dohodneme termín, postavíme a po sebe upraceme.</p></li>
+        <ol class="kroky" data-kroky>
+          <li><span class="bod">1</span><h3>Zavoláte alebo napíšete</h3><p>Poviete nám, čo potrebujete. Pomôže aj pár fotiek strechy alebo miesta.</p></li>
+          <li><span class="bod">2</span><h3>Obhliadka</h3><p>Prídeme, pozrieme sa na miesto a všetko zameriame.</p></li>
+          <li><span class="bod">3</span><h3>Cenová ponuka</h3><p>Pripravíme ponuku s rozpisom prác a materiálu.</p></li>
+          <li><span class="bod">4</span><h3>Realizácia</h3><p>Dohodneme termín, postavíme a po sebe upraceme.</p></li>
         </ol>
       </div>
     </section>
 
-    <section class="sekcia" id="kontakt" aria-labelledby="kontakt-nadpis">
-      <div class="obal kontakt">
-        <div>
-          <h2 id="kontakt-nadpis">Kontakt</h2>
-          <div class="telefony">
-            <a href="tel:+421951259327">0951 259 327</a>
-            <a href="tel:+421914138335">0914 138 335</a>
+    <!-- Realizácie -->
+    <section class="realizacie-sekcia" id="realizacie" aria-labelledby="realizacie-nadpis">
+      <div class="obal">
+        <div class="sekcia-hlava sekcia-hlava--riadok">
+          <h2 id="realizacie-nadpis" data-rozdel>Realizácie</h2>
+          <a class="tlacidlo tlacidlo--obrys" href="/galeria" data-magnet>Všetky fotky</a>
+        </div>
+        <div class="mriezka" data-galeria data-pocet="7">
+          <p class="prazdne">Načítavam fotky…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kontakt s dažďom -->
+    <section class="kontakt-sekcia" id="kontakt" aria-labelledby="kontakt-nadpis" data-kontakt>
+      <canvas data-dazd aria-hidden="true"></canvas>
+      <div class="obal">
+        <h2 id="kontakt-nadpis" data-rozdel>Keď prší, budete v suchu.</h2>
+        <p class="kontakt__popis" data-odhal>Zavolajte alebo napíšte. Prídeme na obhliadku a pripravíme cenovú ponuku.</p>
+        <div class="telefony-velke" data-odhal>
+          <a href="tel:+421951259327" data-cislice>0951 259 327</a>
+          <a href="tel:+421914138335" data-cislice>0914 138 335</a>
+        </div>
+        <div class="kontakt__dalsie" data-odhal>
+          <div class="email-riadok">
+            <a href="mailto:kmg.stav@gmail.com">kmg.stav@gmail.com</a>
+            <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-kopiruj="kmg.stav@gmail.com">Kopírovať e-mail</button>
           </div>
+          <a href="https://www.facebook.com/search/top?q=KMG%20stav" rel="noopener" target="_blank">KMG stav na Facebooku</a>
         </div>
-        <div class="kontakt__dalsie">
-          <p>E-mail: <a href="mailto:kmg.stav@gmail.com">kmg.stav@gmail.com</a></p>
-          <p>Facebook: <a href="https://www.facebook.com/search/top?q=KMG%20stav" rel="noopener" target="_blank">KMG stav</a></p>
-          <p>Ozvite sa telefonicky alebo e-mailom, ponuku pripravíme po obhliadke.</p>
-        </div>
+        <p class="dazd-napoveda" aria-hidden="true">Pohnite kurzorom alebo ťuknite: strecha vás ochráni pred dažďom.</p>
       </div>
     </section>
   </main>
@@ -134,6 +288,10 @@
     </div>
   </footer>
 
+  <a class="fab" href="tel:+421951259327" aria-label="Zavolať 0951 259 327" data-fab>
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
+  </a>
+
   <dialog class="lupa" aria-label="Zväčšená fotka">
     <div class="lupa__hore"><span data-lupa-pocet></span><button type="button" data-lupa-zavriet>Zavrieť</button></div>
     <div class="lupa__foto"><img alt=""></div>
@@ -141,5 +299,6 @@
   </dialog>
 
   <script src="/assets/js/site.js" defer></script>
+  <script src="/assets/js/home.js" defer></script>
 </body>
 </html>

@@ -11,6 +11,14 @@ html:has(body.admin) { scroll-behavior: auto; }
 .admin h2 { font-family: var(--f-nadpis); font-weight: 700; font-size: 1.75rem; line-height: 1.1; margin: 2.25rem 0 1rem; }
 .napoveda { color: var(--bridlica); max-width: 42rem; margin: 0 0 1.5rem; }
 
+.ios-tip { background: var(--grafit); color: var(--biela); font-size: .95rem; }
+.ios-tip .obal { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding-top: .75rem; padding-bottom: .75rem; }
+.ios-tip p { margin: 0; }
+.ios-tip svg { width: 1.1em; height: 1.1em; vertical-align: -.15em; }
+.ios-tip button { flex: none; background: none; border: 1.5px solid rgba(255,255,255,.4); color: inherit; border-radius: 3px; min-height: 2.5rem; padding: 0 .8rem; font: 500 .9rem var(--f-text); cursor: pointer; }
+@media (display-mode: standalone) { .admin .hlavicka { padding-top: env(safe-area-inset-top); } }
+@media (max-width: 30rem) { .nazov-spravy { display: none; } }
+
 /* Formuláre */
 label { font-weight: 500; font-size: 0.95rem; }
 input:not([type='checkbox']):not([type='file']):not([type='radio']), select, textarea {

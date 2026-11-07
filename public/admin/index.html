@@ -8,6 +8,11 @@
   <meta name="theme-color" content="#2f2e2c">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="KMG">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,10 +26,18 @@
         <a class="logo" href="/" aria-label="Otvoriť web"><img src="/assets/img/logo.png" alt="KMG" width="621" height="344"></a>
         <div class="hlavicka__vpravo">
           <span class="nazov-spravy">Správa webu</span>
+          <button type="button" class="tlacidlo tlacidlo--male" data-instalovat hidden>Inštalovať appku</button>
           <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-odhlasit hidden>Odhlásiť</button>
         </div>
       </div>
     </header>
+
+    <div class="ios-tip" data-ios-tip hidden>
+      <div class="obal">
+        <p>Pridajte si správu webu na plochu ako aplikáciu: ťuknite na <strong>Zdieľať</strong> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2"/></svg> a potom <strong>Pridať na plochu</strong>.</p>
+        <button type="button" aria-label="Zavrieť tip" data-ios-zavriet>Zavrieť</button>
+      </div>
+    </div>
 
     <!-- Prihlásenie -->
     <main id="prihlasenie" class="obal prihlasenie" hidden>

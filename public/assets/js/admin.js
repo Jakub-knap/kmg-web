@@ -155,7 +155,14 @@
     ukazKartu();
     nacitajFotky();
     if (admin) {
-      nacitajNastavenia();
+      nacitajNastavenia().then(() => {
+        const url = new URL(location.href);
+        if (url.searchParams.has('nova')) {
+          url.searchParams.delete('nova');
+          history.replaceState(null, '', url);
+          $('[data-nova-ponuka]').click();
+        }
+      });
       nacitajPonuky();
     }
   }
@@ -865,6 +872,34 @@
     } finally {
       btn.disabled = false;
     }
+  });
+
+  // ---------- Aplikácia (PWA) ----------
+  const samostatne = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
+  let instalacia = null;
+  const btnInstal = $('[data-instalovat]');
+  addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    instalacia = e;
+    btnInstal.hidden = false;
+  });
+  btnInstal.addEventListener('click', async () => {
+    if (!instalacia) return;
+    instalacia.prompt();
+    const { outcome } = await instalacia.userChoice;
+    if (outcome === 'accepted') oznam('Aplikácia KMG je na ploche');
+    instalacia = null;
+    btnInstal.hidden = true;
+  });
+  addEventListener('appinstalled', () => { btnInstal.hidden = true; });
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (iOS && !samostatne && pamat.get('kmg-ios-tip') !== 'nie') $('[data-ios-tip]').hidden = false;
+  $('[data-ios-zavriet]').addEventListener('click', () => {
+    $('[data-ios-tip]').hidden = true;
+    pamat.set('kmg-ios-tip', 'nie');
   });
 
   // ---------- Štart ----------

@@ -62,6 +62,15 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Cenník:** vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
 - **Firma:** údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
 
+## Aplikácia v mobile (PWA)
+Správa webu sa dá nainštalovať na plochu telefónu ako aplikácia s ikonou KMG:
+- **Android (Chrome):** otvorte `kmg.sk/admin` a ťuknite na **Inštalovať appku** v hlavičke
+  (alebo menu ⋮ → **Pridať na plochu**).
+- **iPhone (Safari):** otvorte `kmg.sk/admin`, ťuknite **Zdieľať** → **Pridať na plochu**.
+
+Po dlhom podržaní ikony sú skratky **Pridať fotky** a **Nová cenová ponuka**.
+Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a ponuky sa načítajú až po pripojení.
+
 ## Technika (pre programátora)
 - Statické stránky v `public/` (HTML, CSS, JS bez buildu), funkcie vo `api/` (Vercel Functions, Node).
 - Dáta vo Vercel Blob: `galeria/<kategoria>/<id>.jpg`, `nahlady/…` (zmenšeniny), `nastavenia/*.json`,
