@@ -11,11 +11,23 @@ html:has(body.admin) { scroll-behavior: auto; }
 .admin h2 { font-family: var(--f-nadpis); font-weight: 700; font-size: 1.75rem; line-height: 1.1; margin: 2.25rem 0 1rem; }
 .napoveda { color: var(--bridlica); max-width: 42rem; margin: 0 0 1.5rem; }
 
-.ios-tip { background: var(--grafit); color: var(--biela); font-size: .95rem; }
-.ios-tip .obal { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding-top: .75rem; padding-bottom: .75rem; }
-.ios-tip p { margin: 0; }
-.ios-tip svg { width: 1.1em; height: 1.1em; vertical-align: -.15em; }
-.ios-tip button { flex: none; background: none; border: 1.5px solid rgba(255,255,255,.4); color: inherit; border-radius: 3px; min-height: 2.5rem; padding: 0 .8rem; font: 500 .9rem var(--f-text); cursor: pointer; }
+.instal-pas { background: var(--grafit); color: var(--biela); }
+.instal-pas .obal { display: flex; align-items: center; gap: .75rem; padding-top: .65rem; padding-bottom: .65rem; }
+.instal-pas img { width: 2.75rem; height: 2.75rem; border-radius: 10px; flex: none; }
+.instal-pas p { margin: 0; flex: 1; line-height: 1.25; min-width: 0; }
+.instal-pas strong { display: block; }
+.instal-pas span { font-size: .88rem; color: #cfcdc8; }
+.instal-pas .tlacidlo { flex: none; }
+.instal-pas__zavriet { flex: none; width: 2.5rem; height: 2.5rem; display: grid; place-items: center; background: none; border: 0; color: #cfcdc8; cursor: pointer; border-radius: 50%; }
+.instal-pas__zavriet:hover { color: var(--biela); background: rgba(255,255,255,.08); }
+.instal-pas__zavriet svg { width: 1.25rem; height: 1.25rem; }
+.navod { border: 0; border-radius: 10px; padding: 1.75rem 1.5rem 1.5rem; width: min(26rem, calc(100vw - 2rem)); text-align: center; color: var(--grafit); }
+.navod::backdrop { background: rgba(30, 30, 28, .6); }
+.navod img { width: 4rem; height: 4rem; border-radius: 14px; margin: 0 auto .75rem; box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+.navod h2 { margin: 0 0 1rem !important; font-size: 1.6rem !important; }
+.navod ol { text-align: left; margin: 0 0 1.5rem; padding-left: 1.4rem; display: grid; gap: .6rem; font-size: 1.05rem; }
+.navod .tlacidlo { width: 100%; }
+.navod svg { width: 1.15em; height: 1.15em; vertical-align: -.2em; }
 @media (display-mode: standalone) { .admin .hlavicka { padding-top: env(safe-area-inset-top); } }
 @media (max-width: 30rem) { .nazov-spravy { display: none; } }
 

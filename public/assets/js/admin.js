@@ -880,27 +880,67 @@
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
   }
+  const instalPas = $('[data-instal-pas]');
+  const navod = $('[data-navod]');
   let instalacia = null;
-  const btnInstal = $('[data-instalovat]');
+  if (!samostatne) instalPas.hidden = false;
+
   addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     instalacia = e;
-    btnInstal.hidden = false;
   });
-  btnInstal.addEventListener('click', async () => {
-    if (!instalacia) return;
-    instalacia.prompt();
-    const { outcome } = await instalacia.userChoice;
-    if (outcome === 'accepted') oznam('Aplikácia KMG je na ploche');
-    instalacia = null;
-    btnInstal.hidden = true;
+  addEventListener('appinstalled', () => {
+    instalPas.hidden = true;
+    oznam('Aplikácia KMG je na ploche');
   });
-  addEventListener('appinstalled', () => { btnInstal.hidden = true; });
-  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (iOS && !samostatne && pamat.get('kmg-ios-tip') !== 'nie') $('[data-ios-tip]').hidden = false;
-  $('[data-ios-zavriet]').addEventListener('click', () => {
-    $('[data-ios-tip]').hidden = true;
-    pamat.set('kmg-ios-tip', 'nie');
+  $('[data-instal-zavriet]').addEventListener('click', () => { instalPas.hidden = true; });
+  $('[data-navod-zavriet]').addEventListener('click', () => navod.close());
+
+  const IKONA_ZDIELAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  function krokyInstalacie() {
+    const ua = navigator.userAgent;
+    const iOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (iOS) {
+      return [
+        `Ťuknite na <strong>Zdieľať</strong> ${IKONA_ZDIELAT} (v Safari dole uprostred, v Chrome hore vpravo).`,
+        'Zrolujte nižšie a vyberte <strong>Pridať na plochu</strong>.',
+        'Ťuknite na <strong>Pridať</strong>. Ikona KMG bude na ploche.',
+      ];
+    }
+    if (/samsungbrowser/i.test(ua)) {
+      return [
+        'Ťuknite na menu <strong>☰</strong> dole vpravo.',
+        'Vyberte <strong>Pridať stránku na</strong> a potom <strong>Domovská obrazovka</strong>.',
+        'Potvrďte <strong>Pridať</strong>.',
+      ];
+    }
+    if (/firefox/i.test(ua) && /android/i.test(ua)) {
+      return ['Ťuknite na menu <strong>⋮</strong>.', 'Vyberte <strong>Inštalovať</strong> alebo <strong>Pridať na plochu</strong>.'];
+    }
+    if (/android/i.test(ua)) {
+      return [
+        'Ťuknite na <strong>⋮</strong> vpravo hore v prehliadači.',
+        'Vyberte <strong>Inštalovať aplikáciu</strong> alebo <strong>Pridať na plochu</strong>.',
+        'Potvrďte <strong>Inštalovať</strong>.',
+      ];
+    }
+    return [
+      'V Chrome alebo Edge kliknite na ikonu inštalácie vpravo v adresnom riadku.',
+      'Alebo otvorte menu <strong>⋮</strong> a vyberte <strong>Inštalovať KMG</strong> (prípadne <strong>Uložiť a zdieľať → Inštalovať stránku ako aplikáciu</strong>).',
+      'Na telefóne otvorte túto adresu v mobile a pridajte si ju na plochu.',
+    ];
+  }
+
+  $('[data-instalovat]').addEventListener('click', async () => {
+    if (instalacia) {
+      instalacia.prompt();
+      const { outcome } = await instalacia.userChoice;
+      instalacia = null;
+      if (outcome === 'accepted') instalPas.hidden = true;
+      return;
+    }
+    $('[data-navod-kroky]').innerHTML = krokyInstalacie().map((k) => `<li>${k}</li>`).join('');
+    navod.showModal();
   });
 
   // ---------- Štart ----------
