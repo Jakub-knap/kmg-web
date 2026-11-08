@@ -1,9 +1,9 @@
 // Fotky v zákazkách.
 //   GET    /api/photos                       – verejný zoznam všetkých fotiek (pre staršie verzie stránky)
-//   POST   /api/photos?zakazka=<zid>         – nahratie do zákazky (FormData: foto, nahlad)
+//   POST   /api/photos?zakazka=<zid>[&oznacenie=pred|po] – nahratie do zákazky (FormData: foto, nahlad)
 //   DELETE /api/photos?id=<zid>/<fid>        – zmazanie fotky (aj staršie <kategoria>/<fid>)
 import { deny, fail, json } from './_lib/auth.js';
-import { FID, KATEGORIE, nacitajGaleriu, noveId, ZID } from './_lib/galeria.js';
+import { FID, KATEGORIE, nacitajGaleriu, nastavOznacenie, noveId, OZNACENIA, ZID } from './_lib/galeria.js';
 import { del, listAll, put } from './_lib/store.js';
 
 const MAX_BYTES = 4 * 1024 * 1024; // Vercel funkcia prijme najviac 4,5 MB
@@ -26,7 +26,9 @@ export async function POST(request) {
   const denied = deny(request, ['admin', 'fotky']);
   if (denied) return denied;
 
-  const zid = new URL(request.url).searchParams.get('zakazka') || '';
+  const params = new URL(request.url).searchParams;
+  const zid = params.get('zakazka') || '';
+  const oznacenie = OZNACENIA.includes(params.get('oznacenie')) ? params.get('oznacenie') : null;
   if (!ZID.test(zid)) return fail(400, 'Vyberte zákazku, do ktorej fotky patria.');
   if (!(await listAll(`zakazky/${zid}/`)).length) return fail(404, 'Zákazka už neexistuje. Obnovte stránku.');
 
@@ -51,7 +53,8 @@ export async function POST(request) {
     if (nahlad && typeof nahlad !== 'string' && nahlad.size > 0 && nahlad.size < MAX_BYTES) {
       mala = await put(`nahlady/${zid}/${fid}.${ext}`, nahlad, { access: 'public', addRandomSuffix: false, contentType: nahlad.type || typ });
     }
-    return json({ foto: { id: `${zid}/${fid}`, url: plna.url, nahlad: mala.url, cas: Number(fid.split('-')[0]) } }, 201);
+    if (oznacenie) await nastavOznacenie(zid, fid, oznacenie);
+    return json({ foto: { id: `${zid}/${fid}`, url: plna.url, nahlad: mala.url, cas: Number(fid.split('-')[0]), ...(oznacenie ? { oznacenie } : {}) } }, 201);
   } catch (e) {
     console.error(e);
     return fail(500, 'Fotku sa nepodarilo uložiť. Skúste to znova o chvíľu.');

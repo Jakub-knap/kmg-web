@@ -8,6 +8,8 @@ import { randomUUID } from 'node:crypto';
 import { del, listAll, readJson, writeJsonVersion } from './store.js';
 
 export const KATEGORIE = ['strechy', 'chaty', 'pristresky', 'altanky', 'pergoly', 'drevodomy', 'interier'];
+export const OZNACENIA = ['pred', 'po']; // voliteľné označenie fotky: pred realizáciou / po realizácii
+const PORADIE = { pred: 0, po: 2 };
 export const ZID = /^\d{13}-[a-z0-9]{6,16}$/;
 export const FID = /^\d{13}-[a-z0-9]{6,16}$/;
 const FOTO = /^(galeria|nahlady)\/(\d{13}-[a-z0-9]+)\/(\d{13}-[a-z0-9]+)\.(?:jpe?g|png|webp)$/i;
@@ -41,6 +43,17 @@ export async function nacitajZakazku(zid) {
   if (!blobs.length) return null;
   const naj = blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))[0];
   return readJson(naj);
+}
+
+/** Nastaví alebo zruší označenie fotky (pred / po). */
+export async function nastavOznacenie(zid, fid, hodnota) {
+  const d = await nacitajZakazku(zid);
+  if (!d) return null;
+  const oznacenia = { ...(d.oznacenia || {}) };
+  if (OZNACENIA.includes(hodnota)) oznacenia[fid] = hodnota;
+  else delete oznacenia[fid];
+  await ulozZakazku(zid, { ...d, oznacenia });
+  return oznacenia;
 }
 
 export async function zmazZakazku(zid) {
@@ -81,7 +94,7 @@ export async function nacitajGaleriu() {
   await Promise.all([...najnovsie].map(async ([zid, b]) => {
     try {
       const d = await readJson(b);
-      zakazky.set(zid, { id: zid, nazov: d.nazov || 'Zákazka', kategoria: d.kategoria || 'strechy', vytvorene: d.vytvorene || casZ(zid), fotky: [] });
+      zakazky.set(zid, { id: zid, nazov: d.nazov || 'Zákazka', kategoria: d.kategoria || 'strechy', vytvorene: d.vytvorene || casZ(zid), oznacenia: d.oznacenia || {}, fotky: [] });
     } catch { /* poškodený súbor preskočíme */ }
   }));
 
@@ -95,8 +108,10 @@ export async function nacitajGaleriu() {
     const m = b.pathname.match(FOTO);
     if (m) {
       const id = `${m[2]}/${m[3]}`;
-      const f = { id, url: b.url, nahlad: nahladPre.get(id) || b.url, cas: casZ(m[3]) };
-      zakazky.get(m[2])?.fotky.push(f);
+      const z = zakazky.get(m[2]);
+      if (!z) continue;
+      const oz = z.oznacenia[m[3]];
+      z.fotky.push({ id, url: b.url, nahlad: nahladPre.get(id) || b.url, cas: casZ(m[3]), ...(OZNACENIA.includes(oz) ? { oznacenie: oz } : {}) });
       continue;
     }
     const s = b.pathname.match(STARA);
@@ -106,7 +121,8 @@ export async function nacitajGaleriu() {
     }
   }
   const zoznam = [...zakazky.values()]
-    .map((z) => ({ ...z, fotky: z.fotky.sort((a, b) => a.cas - b.cas) }))
+    // poradie: pred realizáciou, bez označenia, po realizácii; v rámci skupiny podľa času
+    .map(({ oznacenia, ...z }) => ({ ...z, fotky: z.fotky.sort((a, b) => (PORADIE[a.oznacenie] ?? 1) - (PORADIE[b.oznacenie] ?? 1) || a.cas - b.cas) }))
     .sort((a, b) => b.vytvorene - a.vytvorene);
   return { zakazky: zoznam, ine: ine.sort((a, b) => b.cas - a.cas) };
 }

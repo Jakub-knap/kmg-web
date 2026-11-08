@@ -1,10 +1,11 @@
 // Zákazky v galérii.
 //   GET    /api/zakazky              – verejný zoznam zákaziek s fotkami
 //   POST   /api/zakazky              – nová zákazka { nazov, kategoria }; najstaršie nad limit sa zmažú
-//   PUT    /api/zakazky?id=<zid>     – úprava názvu alebo druhu stavby
+//   PUT    /api/zakazky?id=<zid>     – úprava názvu alebo druhu stavby,
+//                                       alebo { foto: <fid>, oznacenie: 'pred' | 'po' | '' } – označenie fotky
 //   DELETE /api/zakazky?id=<zid>     – zmazanie zákazky aj s fotkami
 import { deny, fail, json } from './_lib/auth.js';
-import { cistiZakazku, nacitajGaleriu, nacitajZakazku, noveId, orezNaLimit, ulozZakazku, zmazZakazku, ZID } from './_lib/galeria.js';
+import { cistiZakazku, FID, nacitajGaleriu, nacitajZakazku, nastavOznacenie, noveId, orezNaLimit, ulozZakazku, zmazZakazku, ZID } from './_lib/galeria.js';
 import { loadSettings } from './_lib/settings.js';
 
 async function limitZakaziek() {
@@ -61,11 +62,17 @@ export async function PUT(request) {
     return fail(400, 'Údaje o zákazke neprišli celé.');
   }
   try {
+    if (body?.foto !== undefined) {
+      if (!FID.test(String(body.foto))) return fail(400, 'Neplatná fotka.');
+      const oznacenia = await nastavOznacenie(zid, String(body.foto), body.oznacenie);
+      if (!oznacenia) return fail(404, 'Zákazka už neexistuje.');
+      return json({ foto: body.foto, oznacenie: oznacenia[body.foto] || null });
+    }
     const povodna = await nacitajZakazku(zid);
     if (!povodna) return fail(404, 'Zákazka už neexistuje.');
     const data = cistiZakazku(body, povodna);
     if (!data.nazov) return fail(400, 'Napíšte názov zákazky.');
-    await ulozZakazku(zid, { ...data, vytvorene: povodna.vytvorene });
+    await ulozZakazku(zid, { ...povodna, ...data, vytvorene: povodna.vytvorene });
     return json({ zakazka: { id: zid, ...data, vytvorene: povodna.vytvorene } });
   } catch (e) {
     console.error(e);

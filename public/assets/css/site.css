@@ -158,6 +158,43 @@ a { color: inherit; }
   padding: .2rem .55rem; border-radius: 999px; background: rgba(20, 20, 19, .72); color: #fff; font: 600 .8rem var(--f-text);
 }
 .album__pocet svg { width: .95rem; height: .95rem; }
+.album__predpo {
+  position: absolute; top: .5rem; left: .5rem; padding: .2rem .6rem; border-radius: 999px;
+  background: var(--cervena); color: #fff; font: 600 .8rem var(--f-text);
+}
+
+/* Porovnanie pred a po */
+.porovnanie {
+  --x: 50%;
+  position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 6px;
+  background: #161514; cursor: ew-resize; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+}
+.porovnanie .porovnanie__po, .porovnanie .porovnanie__pred img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; pointer-events: none; }
+.porovnanie__pred { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--x)) 0 0); }
+.porovnanie__ciara { position: absolute; top: 0; bottom: 0; left: var(--x); width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 14px rgba(0, 0, 0, .45); }
+.porovnanie .porovnanie__uchop {
+  position: absolute; top: 50%; left: var(--x); width: 3.4rem; height: 3.4rem; margin: -1.7rem 0 0 -1.7rem;
+  display: grid; place-items: center; border-radius: 50%; border: 3px solid #fff; padding: 0;
+  background: var(--cervena); color: #fff; cursor: ew-resize; box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
+  transition: transform .2s;
+}
+.porovnanie .porovnanie__uchop:hover, .porovnanie .porovnanie__uchop:focus-visible { transform: scale(1.1); border-color: #fff; }
+.porovnanie__uchop svg { width: 1.5rem; height: 1.5rem; }
+.porovnanie__stitok {
+  position: absolute; top: .75rem; padding: .25rem .7rem; border-radius: 999px;
+  font: 600 .85rem var(--f-text); color: #fff; background: rgba(20, 20, 19, .78); pointer-events: none;
+}
+.porovnanie__stitok--pred { left: .75rem; }
+.porovnanie__stitok--po { right: .75rem; background: var(--cervena); }
+.lupa__foto { position: relative; grid-template-columns: minmax(0, 1fr); }
+.lupa__porovnanie { width: 100%; max-width: calc((100dvh - 9rem) * 4 / 3); justify-self: center; }
+.lupa__porovnanie .porovnanie { border-radius: 4px; }
+.lupa__stitok {
+  position: absolute; top: .75rem; left: 50%; transform: translateX(-50%); padding: .25rem .8rem; border-radius: 999px;
+  font: 600 .85rem var(--f-text); background: rgba(20, 20, 19, .8); color: #fff; pointer-events: none;
+}
+.lupa__stitok[data-ozn="po"] { background: var(--cervena); }
+.lupa img[hidden] { display: none; }
 @media (min-width: 60rem) { .album__popis strong { font-size: 1.1rem; } }
 .prazdne {
   grid-column: 1 / -1; padding: 2rem; border: 2px dashed var(--linka); color: var(--bridlica); text-align: center;
@@ -180,7 +217,7 @@ a { color: inherit; }
 /* Zväčšená fotka */
 .lupa { border: 0; padding: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; background: rgba(20,20,19,.96); color: var(--biela); }
 .lupa::backdrop { background: rgba(20,20,19,.9); }
-.lupa[open] { display: grid; grid-template-rows: auto 1fr auto; }
+.lupa[open] { display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); }
 .lupa__hore { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.75rem 1rem; }
 .lupa__hore span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .lupa__foto { display: grid; place-items: center; min-height: 0; padding: 0 0.5rem; touch-action: pan-y; }

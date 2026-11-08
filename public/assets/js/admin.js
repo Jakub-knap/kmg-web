@@ -278,20 +278,53 @@
     return fig;
   }
 
+  const PORADIE_OZN = { pred: 0, po: 2 };
+  const NAZOV_OZN = { pred: 'Pred', po: 'Po' };
+  const DALSIE_OZN = { '': 'pred', pred: 'po', po: '' };
+  const zoradFotky = (z) => z.fotky.sort((a, b) => (PORADIE_OZN[a.oznacenie] ?? 1) - (PORADIE_OZN[b.oznacenie] ?? 1) || a.cas - b.cas);
+  const obalZakazky = (z) => z.fotky.find((f) => f.oznacenie === 'po') || z.fotky[0];
+
   function obnovKartu(el, z) {
+    zoradFotky(z);
+    const obal = obalZakazky(z);
+    const pred = z.fotky.filter((f) => f.oznacenie === 'pred').length;
+    const po = z.fotky.filter((f) => f.oznacenie === 'po').length;
     $('h3', el).textContent = z.nazov;
-    $('.zakazka__meta', el).textContent = `${NAZOV_KAT[z.kategoria] || ''}, ${pocetFotiek(z.fotky.length)}, ${datumZ(z.vytvorene)}`;
-    $('.zakazka__obal', el).innerHTML = z.fotky[0] ? `<img src="${esc(z.fotky[0].nahlad)}" alt="">` : '<span>Bez fotiek</span>';
+    $('.zakazka__meta', el).textContent = `${NAZOV_KAT[z.kategoria] || ''}, ${pocetFotiek(z.fotky.length)}, ${datumZ(z.vytvorene)}${pred || po ? `, pred: ${pred}, po: ${po}` : ''}`;
+    $('.zakazka__obal', el).innerHTML = obal ? `<img src="${esc(obal.nahlad)}" alt="">` : '<span>Bez fotiek</span>';
     const det = $('details', el);
     det.hidden = !z.fotky.length;
     $('summary', det).textContent = `Fotky v zákazke (${z.fotky.length})`;
     const mriezka = $('.admin-mriezka', det);
     mriezka.replaceChildren();
-    z.fotky.forEach((f, i) => mriezka.append(figurka(f, i === 0 ? 'Úvodná' : '', () => {
-      z.fotky = z.fotky.filter((x) => x.id !== f.id);
-      obnovKartu(el, z);
-      aktualizujVarovanie();
-    })));
+    z.fotky.forEach((f) => {
+      const fig = figurka(f, f === obal ? 'Úvodná' : '', () => {
+        z.fotky = z.fotky.filter((x) => x.id !== f.id);
+        obnovKartu(el, z);
+        aktualizujVarovanie();
+      });
+      const ozn = document.createElement('button');
+      ozn.type = 'button';
+      ozn.className = 'oznacenie';
+      ozn.dataset.ozn = f.oznacenie || '';
+      ozn.textContent = NAZOV_OZN[f.oznacenie] || 'Pred/Po?';
+      ozn.title = 'Ťuknutím prepnete: bez označenia, pred, po';
+      ozn.addEventListener('click', async () => {
+        const nove = DALSIE_OZN[f.oznacenie || ''];
+        ozn.disabled = true;
+        try {
+          const fid = f.id.split('/')[1];
+          await api(`/api/zakazky?id=${encodeURIComponent(z.id)}`, { method: 'PUT', body: { foto: fid, oznacenie: nove } });
+          if (nove) f.oznacenie = nove; else delete f.oznacenie;
+          obnovKartu(el, z);
+        } catch (err) {
+          ozn.disabled = false;
+          oznam(err.message, true);
+        }
+      });
+      $('figcaption', fig).prepend(ozn);
+      mriezka.append(fig);
+    });
     el.classList.toggle('zakazka--prazdna', !z.fotky.length);
   }
 
@@ -308,6 +341,12 @@
           ${mimoWebu ? '<p class="zakazka__mimo">Nad limitom: na webe sa nezobrazuje a zmaže sa pri ďalšej novej zákazke.</p>' : ''}
           <p class="zakazka__vyzva">Pridajte do zákazky fotky.</p>
         </div>
+      </div>
+      <div class="zakazka__oznacenie" role="radiogroup" aria-label="Nové fotky označiť ako">
+        <span>Nové fotky:</span>
+        <label><input type="radio" name="ozn-${z.id}" value="" checked><span>Bez označenia</span></label>
+        <label><input type="radio" name="ozn-${z.id}" value="pred"><span>Pred realizáciou</span></label>
+        <label><input type="radio" name="ozn-${z.id}" value="po"><span>Po realizácii</span></label>
       </div>
       <div class="zakazka__akcie">
         <label class="tlacidlo tlacidlo--male pridat"><input type="file" accept="image/*" multiple>${IKONA_PLUS}Pridať fotky</label>
@@ -326,7 +365,8 @@
     $('input[type=file]', el).addEventListener('change', (e) => {
       const subory = [...e.target.files];
       e.target.value = '';
-      if (subory.length) nahrajDoZakazky(z, subory, el);
+      const oznacenie = $(`input[name="ozn-${z.id}"]:checked`, el)?.value || '';
+      if (subory.length) nahrajDoZakazky(z, subory, el, oznacenie);
     });
     const uprava = $('.zakazka__uprava', el);
     $('[data-upravit]', el).addEventListener('click', () => {
@@ -466,7 +506,7 @@
     });
   }
 
-  async function nahraj(file, z, li, el) {
+  async function nahraj(file, z, li, el, oznacenie = '') {
     const stavText = $('.stav', li);
     const pruh = $('progress', li);
     const img = $('img', li);
@@ -492,11 +532,11 @@
       const form = new FormData();
       form.append('foto', foto, 'foto.jpg');
       if (nahlad) form.append('nahlad', nahlad, 'nahlad.jpg');
-      const data = await odosli(`/api/photos?zakazka=${encodeURIComponent(z.id)}`, form, (p) => { pruh.value = p; });
+      const data = await odosli(`/api/photos?zakazka=${encodeURIComponent(z.id)}${oznacenie ? `&oznacenie=${oznacenie}` : ''}`, form, (p) => { pruh.value = p; });
       z.fotky.push(data.foto);
       obnovKartu(el, z);
       pruh.hidden = true;
-      stavText.textContent = 'Nahraté';
+      stavText.textContent = oznacenie ? `Nahraté ako ${oznacenie === 'pred' ? 'pred realizáciou' : 'po realizácii'}` : 'Nahraté';
       stavText.className = 'stav stav--ok';
       setTimeout(() => li.remove(), 5000);
       return true;
@@ -508,7 +548,7 @@
     }
   }
 
-  async function nahrajDoZakazky(z, subory, el) {
+  async function nahrajDoZakazky(z, subory, el, oznacenie = '') {
     el.classList.remove('zakazka--nova');
     const fronta = $('.fronta', el);
     const polozky = subory.map((f) => {
@@ -520,7 +560,7 @@
     });
     let ok = 0;
     for (let i = 0; i < subory.length; i += 1) {
-      if (await nahraj(subory[i], z, polozky[i], el)) ok += 1;
+      if (await nahraj(subory[i], z, polozky[i], el, oznacenie)) ok += 1;
     }
     if (ok) oznam(`Pridané do zákazky: ${pocetFotiek(ok)}`);
     aktualizujVarovanie();

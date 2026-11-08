@@ -262,6 +262,20 @@ body.domov { background: var(--noc); }
 .kroky h3 { font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1.05; margin: 0 0 .4rem; }
 .kroky p { margin: 0; color: var(--grafit-2); font-size: 1.08rem; }
 
+/* ---------- Pred a po ---------- */
+.predpo-sekcia { background: var(--noc); color: #fff; padding: 6.5rem 0; }
+.predpo-sekcia .sekcia-hlava p { color: #d3d1cb; }
+.predpo-mriezka { display: grid; gap: 2rem; align-items: center; }
+@media (min-width: 60rem) { .predpo-mriezka { grid-template-columns: 1fr 1.6fr; gap: 3.5rem; } }
+.predpo__nazov { font-weight: 600; color: #fff !important; margin-top: .5rem !important; }
+.predpo__dalsie { display: flex; flex-wrap: wrap; gap: .5rem; }
+.predpo__dalsie button {
+  min-height: 2.6rem; padding: .35rem 1rem; border-radius: 999px; cursor: pointer;
+  font: 500 .92rem var(--f-text); color: #fff; background: transparent; border: 1.5px solid rgba(255, 255, 255, .3);
+}
+.predpo__dalsie button[aria-pressed='true'] { background: #fff; color: var(--noc); border-color: #fff; }
+.predpo__plocha .porovnanie { box-shadow: 0 30px 60px rgba(0, 0, 0, .35); }
+
 /* ---------- Realizácie ---------- */
 .realizacie-sekcia { background: #fff; padding: 6.5rem 0; }
 .domov .mriezka { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
