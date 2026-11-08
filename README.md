@@ -5,7 +5,7 @@ Web pre KMG stav: strechy, chaty, prístrešky, altánky, pergoly a drevodomy.
 | Adresa | Čo tam je |
 |---|---|
 | `kmg.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
-| `kmg.sk/galeria` | Všetky fotky s filtrom podľa druhu stavby |
+| `kmg.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
 | `kmg.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník a údaje na ponuke sú v Ponukách. |
 | `kmg.sk/fotky`, `kmg.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
