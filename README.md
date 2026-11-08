@@ -57,7 +57,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Fotky:** vyberiete druh stavby → Pridať fotky → odfotíte alebo vyberiete z galérie.
   Fotky sa v telefóne samé zmenšia a na webe sa objavia do pol minúty.
 - **Ponuky:** Nová ponuka → zákazník → Pridať z cenníka (alebo vlastnú položku) → množstvá → Uložiť.
-  **Uložiť ako PDF** otvorí tlač, kde zvolíte „Uložiť ako PDF“ a pošlete ho zákazníkovi.
+  **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
+  **Poslať** (v mobile) ho rovno odošle cez WhatsApp, e-mail a pod.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
 - **Cenník** (v Ponukách): vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
@@ -77,6 +78,8 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.
+- PDF ponuky sa vytvára priamo v prehliadači (knižnica pdf-lib, MIT) s vloženým písmom KMG Pismo –
+  podmnožina písma Carlito (SIL OFL 1.1, licencia v `public/assets/pdf/LICENSE-Carlito.txt`).
 - Fotka po zmenšení môže mať najviac 4 MB (limit Vercel funkcie je 4,5 MB).
 - Bezplatný plán Vercel Hobby je podľa podmienok Vercelu len na nekomerčné použitie. Pre firemný web
   je oficiálne potrebný plán Pro.

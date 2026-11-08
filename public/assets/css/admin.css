@@ -186,7 +186,11 @@ a.spat { display: inline-block; }
 @media (min-width: 48rem) { .lista-akcii .tlacidlo { flex: 0 0 auto; } .lista-akcii .tlacidlo--zmazat { margin-left: auto; } }
 
 .dalsie-akcie { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; margin: 0.5rem 0 0; }
-.lista-akcii .tlacidlo[data-tlacit] { flex: 1 1 auto; }
+.lista-akcii .tlacidlo svg { width: 1.15rem; height: 1.15rem; }
+@media (max-width: 47.99rem) {
+  .lista-akcii { flex-wrap: nowrap; gap: .4rem; padding: .6rem; }
+  .lista-akcii .tlacidlo { flex: 1 1 auto; padding: .5rem .6rem; font-size: .95rem; gap: .35rem; white-space: nowrap; }
+}
 
 /* Cenník */
 .cennik-skupina { background: var(--biela); padding: 1rem 1.25rem; margin-bottom: 1rem; }

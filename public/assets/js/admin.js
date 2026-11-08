@@ -593,6 +593,7 @@
   document.body.append(jednotkyList);
 
   function ukazEditor() {
+    window.KMGPdf?.priprav().catch(() => {});
     const p = stav.ponuka;
     zoznamBox.hidden = true;
     editor.hidden = false;
@@ -854,26 +855,85 @@
       <div class="t-podpis"><span>Vypracoval</span></div>`;
   }
 
-  $('[data-tlacit]').addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
+  // Záloha: tlač cez prehliadač, ak by sa PDF nedalo vytvoriť priamo
+  async function tlacitPonuku() {
+    const tlac = $('#tlac');
+    tlac.innerHTML = tlacovaVerzia();
+    await Promise.all([...tlac.querySelectorAll('img')].map((i) => i.decode().catch(() => {})));
+    await document.fonts?.ready;
+    const titul = document.title;
+    document.title = (window.KMGPdf?.nazovSuboru(stav.ponuka) || `Cenova-ponuka-${stav.ponuka.id}`).replace(/\.pdf$/, '');
+    window.addEventListener('afterprint', () => { document.title = titul; }, { once: true });
+    window.print();
+  }
+
+  // ---------- PDF: stiahnuť a poslať ----------
+  async function pdfPonuky() {
+    if (!stav.ponuka.id || stav.ponukaZmenena) await ulozPonuku();
+    if (!window.KMGPdf) throw new Error('Nástroj na PDF sa nenačítal.');
+    const blob = await window.KMGPdf.vytvor(stav.ponuka, stav.nastavenia?.firma);
+    return { blob, nazov: window.KMGPdf.nazovSuboru(stav.ponuka) };
+  }
+  function stiahni(blob, nazov) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nazov;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  async function sCakanim(btn, text, akcia) {
+    const povodny = btn.innerHTML;
     btn.disabled = true;
+    btn.textContent = text;
     try {
-      if (!stav.ponuka.id || stav.ponukaZmenena) await ulozPonuku();
-      const tlac = $('#tlac');
-      tlac.innerHTML = tlacovaVerzia();
-      await Promise.all([...tlac.querySelectorAll('img')].map((i) => i.decode().catch(() => {})));
-      await document.fonts?.ready;
-      const titul = document.title;
-      const meno = (stav.ponuka.zakaznik?.meno || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '');
-      document.title = `Cenova-ponuka-${stav.ponuka.id}${meno ? `-${meno}` : ''}`;
-      window.addEventListener('afterprint', () => { document.title = titul; }, { once: true });
-      window.print();
-    } catch (err) {
-      oznam(err.message, true);
+      await akcia();
     } finally {
       btn.disabled = false;
+      btn.innerHTML = povodny;
     }
-  });
+  }
+
+  const btnStiahnut = $('[data-stiahnut]');
+  const btnPoslat = $('[data-poslat]');
+  try {
+    const skuska = new File(['x'], 'skuska.pdf', { type: 'application/pdf' });
+    btnPoslat.hidden = !(navigator.canShare && navigator.canShare({ files: [skuska] }));
+  } catch {
+    btnPoslat.hidden = true;
+  }
+
+  btnStiahnut.addEventListener('click', () => sCakanim(btnStiahnut, 'Pripravujem PDF…', async () => {
+    try {
+      const { blob, nazov } = await pdfPonuky();
+      stiahni(blob, nazov);
+      oznam(`PDF ponuky ${stav.ponuka.id} je stiahnuté`);
+    } catch (err) {
+      if (!stav.ponuka?.id) { oznam(err.message, true); return; }
+      oznam('PDF sa nepodarilo vytvoriť priamo, otváram tlač. Zvoľte Uložiť ako PDF.', true);
+      try { await tlacitPonuku(); } catch (e2) { oznam(e2.message, true); }
+    }
+  }));
+
+  btnPoslat.addEventListener('click', () => sCakanim(btnPoslat, 'Pripravujem…', async () => {
+    let pdf;
+    try {
+      pdf = await pdfPonuky();
+    } catch (err) {
+      oznam(err.message, true);
+      return;
+    }
+    const subor = new File([pdf.blob], pdf.nazov, { type: 'application/pdf' });
+    try {
+      await navigator.share({ files: [subor], title: `Cenová ponuka ${stav.ponuka.id}` });
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      stiahni(pdf.blob, pdf.nazov);
+      oznam('Poslať sa nepodarilo, PDF som stiahol do telefónu.');
+    }
+  }));
 
   // ---------- Aplikácia (PWA) ----------
   const samostatne = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
