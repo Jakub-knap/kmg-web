@@ -69,26 +69,32 @@
 
       <!-- FOTKY -->
       <main class="obal panel" data-panel="fotky" hidden>
-        <h1>Fotky do galérie</h1>
-        <p class="napoveda">Vyberte, čo je na fotkách, a pridajte ich. Fotky sa pred nahratím samé zmenšia, takže to zvládne aj mobilné pripojenie na stavbe.</p>
+        <h1>Fotky zo zákaziek</h1>
+        <p class="napoveda">Každá zákazka je na webe jeden album. Na webe ostáva najviac <strong data-max-text>10</strong> posledných zákaziek. Keď vytvoríte ďalšiu, najstaršia sa zmaže aj s fotkami.</p>
 
-        <fieldset class="vyber-kategorie">
-          <legend>Čo je na fotkách</legend>
-          <div class="cipy" data-kategorie-vyber></div>
-        </fieldset>
-
-        <label class="tlacidlo pridat-fotky">
-          <input type="file" accept="image/*" multiple data-subory>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          Pridať fotky
-        </label>
-        <ul class="fronta" data-fronta></ul>
+        <form class="nova-zakazka" data-nova-zakazka novalidate>
+          <h2>Nová zákazka</h2>
+          <label for="zakazka-nazov">Názov</label>
+          <input id="zakazka-nazov" name="nazov" maxlength="120" placeholder="napr. Rekonštrukcia strechy, Žilina" autocomplete="off">
+          <fieldset class="vyber-kategorie">
+            <legend>Druh stavby</legend>
+            <div class="cipy" data-kategorie-vyber></div>
+          </fieldset>
+          <p class="varovanie" data-varovanie hidden></p>
+          <button type="submit" class="tlacidlo">Vytvoriť zákazku</button>
+        </form>
 
         <div class="riadok-nadpis">
-          <h2>Nahraté fotky <span data-pocet-fotiek></span></h2>
-          <select data-filter-fotiek aria-label="Zobraziť kategóriu"></select>
+          <h2>Zákazky <span data-pocet-zakaziek></span></h2>
+          <label class="limit" data-limit-blok hidden>Na webe najviac <input type="number" min="1" max="50" inputmode="numeric" data-limit></label>
         </div>
-        <div class="admin-mriezka" data-zoznam-fotiek></div>
+        <div class="zakazky" data-zakazky></div>
+
+        <section data-ine hidden>
+          <h2>Staršie fotky bez zákazky</h2>
+          <p class="napoveda">Tieto fotky sú z doby pred zákazkami. Na webe sa zobrazujú, kým ich nezmažete.</p>
+          <div class="admin-mriezka" data-ine-fotky></div>
+        </section>
       </main>
 
       <!-- PONUKY: zoznam -->

@@ -195,7 +195,7 @@
     }
   });
 
-  // ---------- Fotky ----------
+  // ---------- Fotky: zákazky ----------
   const vyberKat = $('[data-kategorie-vyber]');
   const poslednaKat = pamat.get('kmg-kategoria') || 'strechy';
   KATEGORIE.forEach(([k, nazov]) => {
@@ -206,53 +206,219 @@
   });
   vyberKat.addEventListener('change', (e) => pamat.set('kmg-kategoria', e.target.value));
 
-  const filterFotiek = $('[data-filter-fotiek]');
-  filterFotiek.addEventListener('change', vykresliFotky);
+  const tvarNova = $('[data-nova-zakazka]');
+  const zakazkyBox = $('[data-zakazky]');
+  const limitVstup = $('[data-limit]');
+  stav.galeria = { zakazky: [], ine: [], max: 10 };
+
+  const pocetFotiek = (n) => `${n} ${n === 1 ? 'fotka' : n >= 2 && n <= 4 ? 'fotky' : 'fotiek'}`;
+  const datumZ = (ms) => new Date(ms).toLocaleDateString('sk-SK');
+  const IKONA_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
   async function nacitajFotky() {
     try {
-      const data = await api(`/api/photos?t=${Date.now()}`);
-      stav.fotky = data.fotky || [];
+      const d = await api(`/api/zakazky?t=${Date.now()}`);
+      stav.galeria = { zakazky: d.zakazky || [], ine: d.ine || [], max: d.max || 10 };
     } catch (e) {
       oznam(e.message, true);
     }
-    vykresliFotky();
+    vykresliZakazky();
   }
 
-  function vykresliFotky() {
-    const vybrana = filterFotiek.value;
-    const pocty = Object.fromEntries(KATEGORIE.map(([k]) => [k, 0]));
-    stav.fotky.forEach((f) => { pocty[f.kategoria] = (pocty[f.kategoria] || 0) + 1; });
-    filterFotiek.innerHTML = `<option value="">Všetky (${stav.fotky.length})</option>${KATEGORIE.map(([k, n]) => `<option value="${k}">${esc(n)} (${pocty[k]})</option>`).join('')}`;
-    filterFotiek.value = vybrana;
-    $('[data-pocet-fotiek]').textContent = `(${stav.fotky.length})`;
+  function aktualizujVarovanie() {
+    const { zakazky, max } = stav.galeria;
+    $('[data-max-text]').textContent = max;
+    const v = $('[data-varovanie]');
+    if (zakazky.length >= max) {
+      const zmaze = zakazky.slice(max - 1);
+      v.innerHTML = `Limit je naplnený (${zakazky.length} z ${max} zákaziek). Po vytvorení novej sa zmaže ${zmaze.length === 1 ? 'najstaršia' : 'najstaršie'}: ${zmaze.map((z) => `<strong>${esc(z.nazov)}</strong> (${pocetFotiek(z.fotky.length)})`).join(', ')}.`;
+      v.hidden = false;
+    } else {
+      v.hidden = true;
+    }
+  }
 
-    const zoznam = $('[data-zoznam-fotiek]');
-    const fotky = vybrana ? stav.fotky.filter((f) => f.kategoria === vybrana) : stav.fotky;
-    zoznam.replaceChildren();
-    if (!fotky.length) {
-      zoznam.innerHTML = '<p class="prazdne-admin">Zatiaľ tu nie sú fotky. Pridajte prvé tlačidlom Pridať fotky.</p>';
+  function vykresliZakazky() {
+    const { zakazky, ine, max } = stav.galeria;
+    $('[data-pocet-zakaziek]').textContent = `(${zakazky.length} z ${max})`;
+    if (stav.rola === 'admin') {
+      $('[data-limit-blok]').hidden = false;
+      if (document.activeElement !== limitVstup) limitVstup.value = max;
+    }
+    aktualizujVarovanie();
+    zakazkyBox.replaceChildren();
+    if (!zakazky.length) {
+      zakazkyBox.innerHTML = '<p class="prazdne-admin">Zatiaľ tu nie je žiadna zákazka. Vytvorte prvú vyššie a pridajte do nej fotky.</p>';
+    }
+    zakazky.forEach((z, i) => zakazkyBox.append(kartaZakazky(z, i >= max)));
+    $('[data-ine]').hidden = !ine.length;
+    const ib = $('[data-ine-fotky]');
+    ib.replaceChildren();
+    ine.forEach((f) => ib.append(figurka(f, NAZOV_KAT[f.kategoria] || '', () => {
+      stav.galeria.ine = stav.galeria.ine.filter((x) => x.id !== f.id);
+      vykresliZakazky();
+    })));
+  }
+
+  function figurka(f, popis, poZmazani) {
+    const fig = document.createElement('figure');
+    fig.innerHTML = `<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.nahlad)}" alt="" loading="lazy"></a><figcaption><span>${esc(popis)}</span><button type="button">Zmazať</button></figcaption>`;
+    const btn = $('button', fig);
+    btn.addEventListener('click', () => dvojklik(btn, 'Naozaj?', async () => {
+      btn.disabled = true;
+      try {
+        await api(`/api/photos?id=${encodeURIComponent(f.id)}`, { method: 'DELETE' });
+        poZmazani();
+        oznam('Fotka zmazaná');
+      } catch (e) {
+        btn.disabled = false;
+        oznam(e.message, true);
+      }
+    }));
+    return fig;
+  }
+
+  function obnovKartu(el, z) {
+    $('h3', el).textContent = z.nazov;
+    $('.zakazka__meta', el).textContent = `${NAZOV_KAT[z.kategoria] || ''}, ${pocetFotiek(z.fotky.length)}, ${datumZ(z.vytvorene)}`;
+    $('.zakazka__obal', el).innerHTML = z.fotky[0] ? `<img src="${esc(z.fotky[0].nahlad)}" alt="">` : '<span>Bez fotiek</span>';
+    const det = $('details', el);
+    det.hidden = !z.fotky.length;
+    $('summary', det).textContent = `Fotky v zákazke (${z.fotky.length})`;
+    const mriezka = $('.admin-mriezka', det);
+    mriezka.replaceChildren();
+    z.fotky.forEach((f, i) => mriezka.append(figurka(f, i === 0 ? 'Úvodná' : '', () => {
+      z.fotky = z.fotky.filter((x) => x.id !== f.id);
+      obnovKartu(el, z);
+      aktualizujVarovanie();
+    })));
+    el.classList.toggle('zakazka--prazdna', !z.fotky.length);
+  }
+
+  function kartaZakazky(z, mimoWebu) {
+    const el = document.createElement('article');
+    el.className = 'zakazka';
+    el.dataset.id = z.id;
+    el.innerHTML = `
+      <div class="zakazka__hlava">
+        <div class="zakazka__obal"></div>
+        <div class="zakazka__info">
+          <h3></h3>
+          <p class="zakazka__meta"></p>
+          ${mimoWebu ? '<p class="zakazka__mimo">Nad limitom: na webe sa nezobrazuje a zmaže sa pri ďalšej novej zákazke.</p>' : ''}
+          <p class="zakazka__vyzva">Pridajte do zákazky fotky.</p>
+        </div>
+      </div>
+      <div class="zakazka__akcie">
+        <label class="tlacidlo tlacidlo--male pridat"><input type="file" accept="image/*" multiple>${IKONA_PLUS}Pridať fotky</label>
+        <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-upravit>Upraviť</button>
+        <button type="button" class="tlacidlo tlacidlo--zmazat tlacidlo--male" data-zmazat>Zmazať</button>
+      </div>
+      <form class="zakazka__uprava" hidden novalidate>
+        <label>Názov<input name="nazov" maxlength="120"></label>
+        <label>Druh stavby<select name="kategoria">${KATEGORIE.map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('')}</select></label>
+        <div class="akcie"><button class="tlacidlo tlacidlo--male" type="submit">Uložiť</button><button class="tlacidlo tlacidlo--obrys tlacidlo--male" type="button" data-zrusit>Zrušiť</button></div>
+      </form>
+      <ul class="fronta"></ul>
+      <details><summary></summary><div class="admin-mriezka"></div></details>`;
+    obnovKartu(el, z);
+
+    $('input[type=file]', el).addEventListener('change', (e) => {
+      const subory = [...e.target.files];
+      e.target.value = '';
+      if (subory.length) nahrajDoZakazky(z, subory, el);
+    });
+    const uprava = $('.zakazka__uprava', el);
+    $('[data-upravit]', el).addEventListener('click', () => {
+      uprava.hidden = !uprava.hidden;
+      uprava.nazov.value = z.nazov;
+      uprava.kategoria.value = z.kategoria;
+      if (!uprava.hidden) uprava.nazov.focus();
+    });
+    $('[data-zrusit]', el).addEventListener('click', () => { uprava.hidden = true; });
+    uprava.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nazov = uprava.nazov.value.trim();
+      if (!nazov) { oznam('Napíšte názov zákazky.', true); return; }
+      try {
+        const d = await api(`/api/zakazky?id=${encodeURIComponent(z.id)}`, { method: 'PUT', body: { nazov, kategoria: uprava.kategoria.value } });
+        Object.assign(z, d.zakazka);
+        obnovKartu(el, z);
+        uprava.hidden = true;
+        oznam('Zákazka uložená');
+      } catch (err) {
+        oznam(err.message, true);
+      }
+    });
+    const zmaz = $('[data-zmazat]', el);
+    zmaz.addEventListener('click', () => dvojklik(zmaz, 'Naozaj zmazať?', async () => {
+      zmaz.disabled = true;
+      try {
+        await api(`/api/zakazky?id=${encodeURIComponent(z.id)}`, { method: 'DELETE' });
+        stav.galeria.zakazky = stav.galeria.zakazky.filter((x) => x.id !== z.id);
+        vykresliZakazky();
+        oznam(`Zákazka ${z.nazov} je zmazaná`);
+      } catch (err) {
+        zmaz.disabled = false;
+        oznam(err.message, true);
+      }
+    }));
+    return el;
+  }
+
+  tvarNova.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('[type=submit]', tvarNova);
+    const nazov = tvarNova.nazov.value.trim();
+    const kategoria = $('input[name="kat"]:checked', vyberKat)?.value || 'strechy';
+    if (!nazov) {
+      oznam('Napíšte názov zákazky.', true);
+      tvarNova.nazov.focus();
       return;
     }
-    for (const f of fotky) {
-      const fig = document.createElement('figure');
-      fig.innerHTML = `<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.nahlad)}" alt="${esc(NAZOV_KAT[f.kategoria] || '')}" loading="lazy"></a><figcaption><span>${esc(NAZOV_KAT[f.kategoria] || f.kategoria)}</span><button type="button">Zmazať</button></figcaption>`;
-      const btn = fig.querySelector('button');
-      btn.addEventListener('click', () => dvojklik(btn, 'Naozaj?', async () => {
-        btn.disabled = true;
-        try {
-          await api(`/api/photos?id=${encodeURIComponent(f.id)}`, { method: 'DELETE' });
-          stav.fotky = stav.fotky.filter((x) => x.id !== f.id);
-          vykresliFotky();
-          oznam('Fotka zmazaná');
-        } catch (e) {
-          btn.disabled = false;
-          oznam(e.message, true);
-        }
-      }));
-      zoznam.append(fig);
+    const { zakazky, max } = stav.galeria;
+    if (zakazky.length >= max) {
+      const zmaze = zakazky.slice(max - 1);
+      if (!confirm(`Vytvorením novej zákazky sa zmaže ${zmaze.map((z) => `„${z.nazov}“`).join(', ')} aj s fotkami. Pokračovať?`)) return;
     }
-  }
+    btn.disabled = true;
+    try {
+      const d = await api('/api/zakazky', { method: 'POST', body: { nazov, kategoria } });
+      const zmazane = new Set((d.zmazane || []).map((x) => x.id));
+      stav.galeria.zakazky = [d.zakazka, ...stav.galeria.zakazky.filter((z) => !zmazane.has(z.id))];
+      tvarNova.nazov.value = '';
+      vykresliZakazky();
+      const karta = zakazkyBox.firstElementChild;
+      karta?.classList.add('zakazka--nova');
+      karta?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      oznam(d.zmazane?.length ? `Zákazka vytvorená, zmazaná najstaršia: ${d.zmazane.map((x) => x.nazov).join(', ')}` : 'Zákazka vytvorená. Pridajte do nej fotky.');
+    } catch (err) {
+      oznam(err.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  limitVstup.addEventListener('change', async () => {
+    const n = Math.min(50, Math.max(1, Math.round(num(limitVstup.value)) || 10));
+    limitVstup.value = n;
+    if (!stav.nastavenia) {
+      oznam('Nastavenia sa ešte načítavajú, skúste to o chvíľu.', true);
+      return;
+    }
+    const predtym = stav.nastavenia.galeria?.maxZakaziek ?? stav.galeria.max;
+    stav.nastavenia.galeria = { ...(stav.nastavenia.galeria || {}), maxZakaziek: n };
+    try {
+      await ulozNastavenia();
+      stav.galeria.max = n;
+      vykresliZakazky();
+      oznam(`Na webe bude najviac ${n} zákaziek`);
+    } catch (err) {
+      stav.nastavenia.galeria.maxZakaziek = predtym;
+      limitVstup.value = predtym;
+      oznam(err.message, true);
+    }
+  });
 
   async function zmensi(file, max, kvalita) {
     let zdroj;
@@ -300,7 +466,7 @@
     });
   }
 
-  async function nahraj(file, kat, li) {
+  async function nahraj(file, z, li, el) {
     const stavText = $('.stav', li);
     const pruh = $('progress', li);
     const img = $('img', li);
@@ -326,13 +492,13 @@
       const form = new FormData();
       form.append('foto', foto, 'foto.jpg');
       if (nahlad) form.append('nahlad', nahlad, 'nahlad.jpg');
-      const data = await odosli(`/api/photos?kategoria=${kat}`, form, (p) => { pruh.value = p; });
-      stav.fotky.unshift(data.foto);
-      vykresliFotky();
+      const data = await odosli(`/api/photos?zakazka=${encodeURIComponent(z.id)}`, form, (p) => { pruh.value = p; });
+      z.fotky.push(data.foto);
+      obnovKartu(el, z);
       pruh.hidden = true;
-      stavText.textContent = `Nahraté do kategórie ${NAZOV_KAT[kat]}`;
+      stavText.textContent = 'Nahraté';
       stavText.className = 'stav stav--ok';
-      setTimeout(() => li.remove(), 6000);
+      setTimeout(() => li.remove(), 5000);
       return true;
     } catch (e) {
       pruh.hidden = true;
@@ -342,25 +508,23 @@
     }
   }
 
-  $('[data-subory]').addEventListener('change', async (e) => {
-    const subory = [...e.target.files];
-    e.target.value = '';
-    if (!subory.length) return;
-    const kat = $('input[name="kat"]:checked', vyberKat)?.value || 'strechy';
-    const fronta = $('[data-fronta]');
+  async function nahrajDoZakazky(z, subory, el) {
+    el.classList.remove('zakazka--nova');
+    const fronta = $('.fronta', el);
     const polozky = subory.map((f) => {
       const li = document.createElement('li');
-      li.innerHTML = `<img alt=""><div><div class="nazov-suboru"></div><div class="stav">Čaká…</div><progress max="1" value="0" hidden></progress></div>`;
+      li.innerHTML = '<img alt=""><div><div class="nazov-suboru"></div><div class="stav">Čaká…</div><progress max="1" value="0" hidden></progress></div>';
       $('.nazov-suboru', li).textContent = f.name;
       fronta.append(li);
       return li;
     });
     let ok = 0;
     for (let i = 0; i < subory.length; i += 1) {
-      if (await nahraj(subory[i], kat, polozky[i])) ok += 1;
+      if (await nahraj(subory[i], z, polozky[i], el)) ok += 1;
     }
-    if (ok) oznam(ok === 1 ? 'Fotka je v galérii' : `${ok} fotky sú v galérii`);
-  });
+    if (ok) oznam(`Pridané do zákazky: ${pocetFotiek(ok)}`);
+    aktualizujVarovanie();
+  }
 
   // ---------- Nastavenia (cenník + firma) ----------
   async function nacitajNastavenia() {

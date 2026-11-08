@@ -1,6 +1,9 @@
 // Predvolené nastavenia. Po prvom uložení v správe webu sa používajú uložené hodnoty.
 // IČO a DIČ sú zatiaľ vymyslené – opravte ich v správe webu v záložke Firma.
 export const DEFAULT_SETTINGS = {
+  galeria: {
+    maxZakaziek: 10, // koľko posledných zákaziek ostane na webe
+  },
   firma: {
     nazov: 'KMG stav',
     adresa: 'Ulica 1, 000 00 Obec',

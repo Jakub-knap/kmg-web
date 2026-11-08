@@ -274,14 +274,7 @@ body.domov { background: var(--noc); }
 }
 .domov .mriezka img { transition: transform .8s var(--krivka), filter .5s; }
 .domov .mriezka button:hover img { transform: scale(1.07); }
-.mriezka .popis {
-  position: absolute; left: .6rem; bottom: .6rem; padding: .3rem .65rem; border-radius: 3px;
-  background: rgba(31, 30, 28, .86); color: #fff; font: 600 .85rem var(--f-text);
-  transform: translateY(160%); transition: transform .45s var(--krivka);
-}
-.mriezka button:hover .popis, .mriezka button:focus-visible .popis { transform: none; }
-@media (hover: none) { .mriezka .popis { transform: none; } }
-.galeria-stranka .mriezka .popis { display: none; }
+
 
 /* ---------- Kontakt s dažďom ---------- */
 .kontakt-sekcia { position: relative; isolation: isolate; overflow: hidden; background: var(--noc); color: #fff; padding: 7rem 0 6rem; }

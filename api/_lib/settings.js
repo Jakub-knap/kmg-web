@@ -1,4 +1,4 @@
-// Načítanie a čistenie nastavení (cenník + firma).
+// Načítanie a čistenie nastavení (cenník, firma, galéria).
 import { DEFAULT_SETTINGS } from './defaults.js';
 import { listAll, newest, readJson } from './store.js';
 
@@ -25,13 +25,19 @@ export function clean(input) {
     .slice(0, 500)
     .map((p) => ({ kategoria: text(p.kategoria, 60) || 'Ostatné', nazov: text(p.nazov, 200), jednotka: text(p.jednotka, 20) || 'ks', cena: Math.max(0, num(p.cena)) }))
     .filter((p) => p.nazov);
-  return { firma, cennik };
+  const max = Math.round(num(input?.galeria?.maxZakaziek, DEFAULT_SETTINGS.galeria.maxZakaziek));
+  const galeria = { maxZakaziek: Math.min(50, Math.max(1, max)) };
+  return { firma, cennik, galeria };
 }
 
 export async function loadSettings() {
   const blob = newest(await listAll(FOLDER));
   if (!blob) return structuredClone(DEFAULT_SETTINGS);
   const data = await readJson(blob);
-  return { firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) }, cennik: Array.isArray(data.cennik) ? data.cennik : [] };
+  return {
+    firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) },
+    cennik: Array.isArray(data.cennik) ? data.cennik : [],
+    galeria: { ...DEFAULT_SETTINGS.galeria, ...(data.galeria || {}) },
+  };
 }
 

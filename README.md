@@ -54,8 +54,11 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Ceny v cenníku** sú nastavené na 0 €. Položky bez ceny sú v Cenníku zvýraznené.
 
 ## Ako sa to používa
-- **Fotky:** vyberiete druh stavby → Pridať fotky → odfotíte alebo vyberiete z galérie.
-  Fotky sa v telefóne samé zmenšia a na webe sa objavia do pol minúty.
+- **Fotky (zákazky):** Nová zákazka → názov (napr. „Rekonštrukcia strechy, Žilina“) a druh stavby →
+  Vytvoriť zákazku → **Pridať fotky**. Fotky sa v telefóne samé zmenšia a na webe sa objavia do pol minúty.
+  Každá zákazka je na webe jeden album. Na webe ostáva najviac **10** posledných zákaziek
+  (počet sa dá zmeniť v aplikácii). Pri vytvorení ďalšej sa najstaršia zákazka **zmaže aj s fotkami**,
+  aplikácia na to vopred upozorní. Zákazku aj jednotlivé fotky sa dá premenovať a zmazať.
 - **Ponuky:** Nová ponuka → zákazník → Pridať z cenníka (alebo vlastnú položku) → množstvá → Uložiť.
   **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
   **Poslať** (v mobile) ho rovno odošle cez WhatsApp, e-mail a pod.
@@ -74,7 +77,8 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 
 ## Technika (pre programátora)
 - Statické stránky v `public/` (HTML, CSS, JS bez buildu), funkcie vo `api/` (Vercel Functions, Node).
-- Dáta vo Vercel Blob: `galeria/<kategoria>/<id>.jpg`, `nahlady/…` (zmenšeniny), `nastavenia/*.json`,
+- Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
+  staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json`,
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.

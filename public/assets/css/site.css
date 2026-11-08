@@ -143,6 +143,22 @@ a { color: inherit; }
 .mriezka img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
 .mriezka button:hover img { transform: scale(1.04); }
 @media (prefers-reduced-motion: reduce) { .mriezka img { transition: none; } }
+.mriezka .album { position: relative; }
+.album__popis {
+  position: absolute; left: 0; right: 0; bottom: 0; display: grid; gap: .1rem; text-align: left;
+  padding: 2.4rem .75rem .65rem; color: #fff; background: linear-gradient(transparent, rgba(20, 20, 19, .85));
+}
+.album__popis strong {
+  font: 600 1rem/1.2 var(--f-text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.album__popis small { font-size: .8rem; opacity: .85; }
+.album__pocet {
+  position: absolute; top: .5rem; right: .5rem; display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .55rem; border-radius: 999px; background: rgba(20, 20, 19, .72); color: #fff; font: 600 .8rem var(--f-text);
+}
+.album__pocet svg { width: .95rem; height: .95rem; }
+@media (min-width: 60rem) { .album__popis strong { font-size: 1.1rem; } }
 .prazdne {
   grid-column: 1 / -1; padding: 2rem; border: 2px dashed var(--linka); color: var(--bridlica); text-align: center;
 }
@@ -165,7 +181,8 @@ a { color: inherit; }
 .lupa { border: 0; padding: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; background: rgba(20,20,19,.96); color: var(--biela); }
 .lupa::backdrop { background: rgba(20,20,19,.9); }
 .lupa[open] { display: grid; grid-template-rows: auto 1fr auto; }
-.lupa__hore { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; }
+.lupa__hore { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.75rem 1rem; }
+.lupa__hore span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .lupa__foto { display: grid; place-items: center; min-height: 0; padding: 0 0.5rem; touch-action: pan-y; }
 .lupa__foto img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .lupa__dole { display: flex; justify-content: center; gap: 1rem; padding: 0.75rem 1rem 1.25rem; }
