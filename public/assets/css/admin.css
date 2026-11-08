@@ -114,6 +114,10 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 .admin-mriezka button.potvrdit { background: var(--cervena); color: var(--biela); }
 .prazdne-admin { grid-column: 1 / -1; padding: 1.5rem; border: 2px dashed #c9c7c1; color: var(--bridlica); text-align: center; margin: 0; }
 
+.vymery-napoveda { margin: 0 0 1rem; font-size: .95rem; }
+.polia.polia--dve { grid-template-columns: 1fr 1fr; }
+@media (min-width: 64rem) { .polia.polia--dve { grid-template-columns: repeat(3, 1fr); } }
+
 /* Zákazky */
 .nova-zakazka { background: var(--biela); padding: 1.25rem; border-top: 4px solid var(--cervena); display: grid; gap: .35rem; margin-bottom: 1rem; }
 .nova-zakazka h2 { margin: 0 0 .5rem !important; }

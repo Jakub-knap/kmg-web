@@ -720,6 +720,7 @@
       zakaznik: { meno: '', adresa: '', telefon: '', email: '' },
       miesto: '', predmet: '', polozky: [], zlava: 0,
       platcaDph: Boolean(f.platcaDph), sadzbaDph: f.sadzbaDph ?? 23, platnostDni: f.platnostDni ?? 30,
+      vymery: { plocha: 0, dlzka: 0 },
       poznamka: '',
     };
   }
@@ -766,7 +767,7 @@
       if (!el.name) continue;
       const v = getPath(p, el.name);
       if (el.type === 'checkbox') el.checked = Boolean(v);
-      else if (['zlava', 'sadzbaDph', 'platnostDni'].includes(el.name)) el.value = vstup(v);
+      else if (CISELNE.includes(el.name)) el.value = v ? vstup(v) : '';
       else el.value = v ?? '';
     }
     $('[data-zmazat-ponuku]').hidden = !p.id;
@@ -824,6 +825,40 @@
     $('[data-sucty]').innerHTML = suctyHtml(p, spocitaj(p));
   }
 
+  // Výmery: plocha (m²) a dĺžka (bm) sa prenesú do množstva položiek s rovnakou jednotkou
+  const CISELNE = ['zlava', 'sadzbaDph', 'platnostDni', 'vymery.plocha', 'vymery.dlzka'];
+  const druhJednotky = (j) => {
+    const t = String(j || '').trim().toLowerCase().replace(/\s+/g, '');
+    if (t === 'm²' || t === 'm2') return 'plocha';
+    if (t === 'bm' || t === 'm') return 'dlzka';
+    return null;
+  };
+  function predvoleneMnozstvo(jednotka) {
+    const druh = druhJednotky(jednotka);
+    const v = druh ? num(stav.ponuka.vymery?.[druh]) : 0;
+    return v || 1;
+  }
+  function prenesVymery(druh, stare) {
+    const nove = num(stav.ponuka.vymery?.[druh]);
+    let zmena = false;
+    stav.ponuka.polozky.forEach((x) => {
+      if (druhJednotky(x.jednotka) !== druh) return;
+      const m = num(x.mnozstvo);
+      // prepíšeme len množstvá, ktoré nikto ručne nezmenil
+      if (!m || m === stare || (m === 1 && !stare)) {
+        x.mnozstvo = nove || 1;
+        zmena = true;
+      }
+    });
+    if (zmena) {
+      $$('[data-polozky] li').forEach((li) => {
+        const x = stav.ponuka.polozky[Number(li.dataset.i)];
+        const inp = $('[data-pole="mnozstvo"]', li);
+        if (inp && document.activeElement !== inp) inp.value = vstup(x.mnozstvo);
+      });
+    }
+  }
+
   editor.addEventListener('input', (e) => {
     const t = e.target;
     const p = stav.ponuka;
@@ -833,8 +868,11 @@
       x[t.dataset.pole] = ['mnozstvo', 'cena'].includes(t.dataset.pole) ? num(t.value) : t.value;
     } else if (t.name) {
       if (t.type === 'checkbox') setPath(p, t.name, t.checked);
-      else if (['zlava', 'sadzbaDph', 'platnostDni'].includes(t.name)) setPath(p, t.name, num(t.value));
-      else setPath(p, t.name, t.value);
+      else if (CISELNE.includes(t.name)) {
+        const stare = num(getPath(p, t.name));
+        setPath(p, t.name, num(t.value));
+        if (t.name.startsWith('vymery.')) prenesVymery(t.name === 'vymery.plocha' ? 'plocha' : 'dlzka', stare);
+      } else setPath(p, t.name, t.value);
     }
     stav.ponukaZmenena = true;
     prepocitaj();
@@ -890,7 +928,7 @@
         b.type = 'button';
         b.innerHTML = `<span class="n">${esc(p.nazov)}</span><span class="cena${p.cena ? '' : ' nula'}">${p.cena ? `${eur.format(p.cena)} / ${esc(p.jednotka)}` : `bez ceny / ${esc(p.jednotka)}`}</span>`;
         b.addEventListener('click', () => {
-          stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: 1, cena: p.cena });
+          stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: predvoleneMnozstvo(p.jednotka), cena: p.cena });
           stav.ponukaZmenena = true;
           pridaneVyberom += 1;
           vykresliPolozky();
@@ -975,6 +1013,11 @@
   });
 
   // ---------- Tlač / PDF ----------
+  function vymeryText(p) {
+    const v = p.vymery || {};
+    return [num(v.plocha) && `Plocha: ${cislo.format(num(v.plocha))} m²`, num(v.dlzka) && `Dĺžka: ${cislo.format(num(v.dlzka))} bm`].filter(Boolean).join('   ');
+  }
+
   function tlacovaVerzia() {
     const p = stav.ponuka;
     const f = stav.nastavenia?.firma || {};
@@ -1009,6 +1052,7 @@
         ${p.miesto ? `<div><h2>Miesto stavby</h2><p>${esc(p.miesto)}</p></div>` : ''}
       </div>
       ${p.predmet ? `<p class="t-predmet"><strong>${esc(p.predmet)}</strong></p>` : ''}
+      ${vymeryText(p) ? `<p class="t-meta">${esc(vymeryText(p))}</p>` : ''}
       <table>
         <thead><tr><th>Č.</th><th>Popis</th><th class="c">Množstvo</th><th>MJ</th><th class="c">Cena za MJ</th><th class="c">Spolu</th></tr></thead>
         <tbody>${polozky || '<tr><td colspan="6">Bez položiek</td></tr>'}</tbody>

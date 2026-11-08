@@ -143,6 +143,15 @@
           </fieldset>
 
           <fieldset class="skupina">
+            <legend>Výmery</legend>
+            <p class="napoveda vymery-napoveda">Vyplňte, koľko sa bude robiť. Množstvo sa samo doplní ku všetkým položkám v m² a v bm a pri položke ho môžete ešte zmeniť.</p>
+            <div class="polia polia--dve">
+              <label>Plocha (m²)<input name="vymery.plocha" inputmode="decimal" placeholder="napr. 142"></label>
+              <label>Dĺžka (bm)<input name="vymery.dlzka" inputmode="decimal" placeholder="napr. 28"></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="skupina">
             <legend>Položky</legend>
             <div class="polozky-hlavicka" aria-hidden="true"><span>Popis</span><span>Množstvo</span><span>MJ</span><span>Cena za MJ</span><span>Spolu</span><span></span></div>
             <ol class="polozky" data-polozky></ol>

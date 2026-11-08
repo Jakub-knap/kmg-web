@@ -55,6 +55,7 @@ function clean(input, id) {
     sadzbaDph: Math.max(0, num(input?.sadzbaDph, 23)),
     platnostDni: Math.max(0, Math.round(num(input?.platnostDni, 30))),
     poznamka: text(input?.poznamka, 3000),
+    vymery: { plocha: Math.max(0, num(input?.vymery?.plocha)), dlzka: Math.max(0, num(input?.vymery?.dlzka)) },
     vytvorene: input?.vytvorene || new Date().toISOString(),
     upravene: new Date().toISOString(),
   };

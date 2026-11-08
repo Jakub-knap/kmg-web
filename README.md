@@ -59,7 +59,9 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   Každá zákazka je na webe jeden album. Na webe ostáva najviac **10** posledných zákaziek
   (počet sa dá zmeniť v aplikácii). Pri vytvorení ďalšej sa najstaršia zákazka **zmaže aj s fotkami**,
   aplikácia na to vopred upozorní. Zákazku aj jednotlivé fotky sa dá premenovať a zmazať.
-- **Ponuky:** Nová ponuka → zákazník → Pridať z cenníka (alebo vlastnú položku) → množstvá → Uložiť.
+- **Ponuky:** Nová ponuka → zákazník → **Výmery** (plocha v m², dĺžka v bm) → Pridať z cenníka
+  (alebo vlastnú položku) → Uložiť. Výmery sa samé doplnia ako množstvo ku všetkým položkám v m² a bm;
+  pri položke sa dajú ručne zmeniť (napr. fólia s presahom) a ručne zmenené sa potom neprepisujú.
   **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
   **Poslať** (v mobile) ho rovno odošle cez WhatsApp, e-mail a pod.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
