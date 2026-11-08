@@ -4,6 +4,34 @@ import { listAll, newest, readJson } from './store.js';
 
 export const FOLDER = 'nastavenia/';
 
+// Jednorazové doplnenia uloženého cenníka (každé sa použije len raz).
+const PLECHY = [
+  'Montáž krytiny – trapézový plech',
+  'Montáž krytiny – plech v tvare škridly',
+  'Montáž krytiny – falcovaná krytina',
+  'Montáž krytiny – modulová krytina',
+  'Montáž krytiny – plechová krytina klik',
+];
+const MIGRACIE = ['plechy'];
+
+function doplnPlechy(cennik) {
+  const nazvy = new Set(cennik.map((p) => String(p.nazov).toLowerCase()));
+  if (PLECHY.some((n) => nazvy.has(n.toLowerCase()))) return cennik;
+  const i = cennik.findIndex((p) => /^montáž krytiny\s*[–-]\s*plech$/i.test(String(p.nazov).trim()));
+  if (i >= 0) {
+    // Pôvodnú položku „plech“ nahradíme štyrmi druhmi; cenu prevezmeme ako východiskovú.
+    const p = cennik[i];
+    const nove = PLECHY.map((nazov) => ({ kategoria: p.kategoria, nazov, jednotka: p.jednotka || 'm²', cena: Number(p.cena) || 0 }));
+    return [...cennik.slice(0, i), ...nove, ...cennik.slice(i + 1)];
+  }
+  // Inak ich pridáme za poslednú položku „Montáž krytiny…“ alebo na koniec kategórie Strechy.
+  let kam = -1;
+  cennik.forEach((p, j) => { if (/^montáž krytiny/i.test(String(p.nazov))) kam = j; });
+  if (kam < 0) cennik.forEach((p, j) => { if (p.kategoria === 'Strechy') kam = j; });
+  const nove = PLECHY.map((nazov) => ({ kategoria: 'Strechy', nazov, jednotka: 'm²', cena: 0 }));
+  return kam < 0 ? [...cennik, ...nove] : [...cennik.slice(0, kam + 1), ...nove, ...cennik.slice(kam + 1)];
+}
+
 function text(v, max = 300) {
   return String(v ?? '').slice(0, max).trim();
 }
@@ -27,17 +55,25 @@ export function clean(input) {
     .filter((p) => p.nazov);
   const max = Math.round(num(input?.galeria?.maxZakaziek, DEFAULT_SETTINGS.galeria.maxZakaziek));
   const galeria = { maxZakaziek: Math.min(50, Math.max(1, max)) };
-  return { firma, cennik, galeria };
+  const migracie = (Array.isArray(input?.migracie) ? input.migracie : []).filter((m) => MIGRACIE.includes(m));
+  return { firma, cennik, galeria, migracie };
 }
 
 export async function loadSettings() {
   const blob = newest(await listAll(FOLDER));
-  if (!blob) return structuredClone(DEFAULT_SETTINGS);
+  if (!blob) return { ...structuredClone(DEFAULT_SETTINGS), migracie: [...MIGRACIE] };
   const data = await readJson(blob);
+  const migracie = Array.isArray(data.migracie) ? [...data.migracie] : [];
+  let cennik = Array.isArray(data.cennik) ? data.cennik : [];
+  if (!migracie.includes('plechy')) {
+    cennik = doplnPlechy(cennik);
+    migracie.push('plechy');
+  }
   return {
     firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) },
-    cennik: Array.isArray(data.cennik) ? data.cennik : [],
+    cennik,
     galeria: { ...DEFAULT_SETTINGS.galeria, ...(data.galeria || {}) },
+    migracie,
   };
 }
 
