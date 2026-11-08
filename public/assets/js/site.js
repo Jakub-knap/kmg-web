@@ -1,7 +1,7 @@
 // KMG stav – galéria zákaziek na webe a zväčšovanie fotiek
 (() => {
   const NAZVY = {
-    strechy: 'Strechy', chaty: 'Chaty', pristresky: 'Prístrešky', altanky: 'Altánky',
+    strechy: 'Strechy', atiky: 'Atiky', chaty: 'Chaty', pristresky: 'Prístrešky', altanky: 'Altánky',
     pergoly: 'Pergoly', drevodomy: 'Drevodomy', interier: 'Interiér a pivnice',
   };
   const pocetFotiek = (n) => `${n} ${n === 1 ? 'fotka' : n >= 2 && n <= 4 ? 'fotky' : 'fotiek'}`;

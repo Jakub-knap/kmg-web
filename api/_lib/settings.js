@@ -12,7 +12,24 @@ const PLECHY = [
   'Montáž krytiny – modulová krytina',
   'Montáž krytiny – plechová krytina klik',
 ];
-const MIGRACIE = ['plechy'];
+const ATIKY = [
+  { nazov: 'Oplechovanie atiky – r.š. do 330 mm', jednotka: 'bm' },
+  { nazov: 'Oplechovanie atiky – r.š. do 500 mm', jednotka: 'bm' },
+  { nazov: 'Oplechovanie atiky – r.š. nad 500 mm', jednotka: 'bm' },
+  { nazov: 'Podkladová konštrukcia atiky so spádom (OSB, hranoly)', jednotka: 'bm' },
+  { nazov: 'Demontáž starého oplechovania atiky', jednotka: 'bm' },
+  { nazov: 'Rohy a ukončenia atiky', jednotka: 'ks' },
+];
+const MIGRACIE = ['plechy', 'atiky'];
+
+function doplnAtiky(cennik) {
+  if (cennik.some((p) => /atik/i.test(String(p.nazov)))) return cennik;
+  const nove = ATIKY.map((a) => ({ kategoria: 'Atiky', ...a, cena: 0 }));
+  // za poslednú položku kategórie Strechy, inak na koniec
+  let kam = -1;
+  cennik.forEach((p, j) => { if (p.kategoria === 'Strechy') kam = j; });
+  return kam < 0 ? [...cennik, ...nove] : [...cennik.slice(0, kam + 1), ...nove, ...cennik.slice(kam + 1)];
+}
 
 function doplnPlechy(cennik) {
   const nazvy = new Set(cennik.map((p) => String(p.nazov).toLowerCase()));
@@ -68,6 +85,10 @@ export async function loadSettings() {
   if (!migracie.includes('plechy')) {
     cennik = doplnPlechy(cennik);
     migracie.push('plechy');
+  }
+  if (!migracie.includes('atiky')) {
+    cennik = doplnAtiky(cennik);
+    migracie.push('atiky');
   }
   return {
     firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) },

@@ -7,7 +7,7 @@
 import { randomUUID } from 'node:crypto';
 import { del, listAll, readJson, writeJsonVersion } from './store.js';
 
-export const KATEGORIE = ['strechy', 'chaty', 'pristresky', 'altanky', 'pergoly', 'drevodomy', 'interier'];
+export const KATEGORIE = ['strechy', 'atiky', 'chaty', 'pristresky', 'altanky', 'pergoly', 'drevodomy', 'interier'];
 export const OZNACENIA = ['pred', 'po']; // voliteľné označenie fotky: pred realizáciou / po realizácii
 const PORADIE = { pred: 0, po: 2 };
 export const ZID = /^\d{13}-[a-z0-9]{6,16}$/;

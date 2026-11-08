@@ -1,7 +1,7 @@
 // KMG stav – správa webu
 (() => {
   const KATEGORIE = [
-    ['strechy', 'Strechy'], ['chaty', 'Chaty'], ['pristresky', 'Prístrešky'], ['altanky', 'Altánky'],
+    ['strechy', 'Strechy'], ['atiky', 'Atiky'], ['chaty', 'Chaty'], ['pristresky', 'Prístrešky'], ['altanky', 'Altánky'],
     ['pergoly', 'Pergoly'], ['drevodomy', 'Drevodomy'], ['interier', 'Interiér a pivnice'],
   ];
   const NAZOV_KAT = Object.fromEntries(KATEGORIE);
@@ -760,7 +760,7 @@
       zakaznik: { meno: '', adresa: '', telefon: '', email: '' },
       miesto: '', predmet: '', polozky: [], zlava: 0,
       platcaDph: Boolean(f.platcaDph), sadzbaDph: f.sadzbaDph ?? 23, platnostDni: f.platnostDni ?? 30,
-      vymery: { plocha: 0, dlzka: 0 },
+      vymery: { plocha: 0, dlzka: 0, atika: 0 },
       poznamka: '',
     };
   }
@@ -866,15 +866,16 @@
   }
 
   // Výmery: plocha (m²) a dĺžka (bm) sa prenesú do množstva položiek s rovnakou jednotkou
-  const CISELNE = ['zlava', 'sadzbaDph', 'platnostDni', 'vymery.plocha', 'vymery.dlzka'];
-  const druhJednotky = (j) => {
-    const t = String(j || '').trim().toLowerCase().replace(/\s+/g, '');
+  const CISELNE = ['zlava', 'sadzbaDph', 'platnostDni', 'vymery.plocha', 'vymery.dlzka', 'vymery.atika'];
+  // Položky atiky v bm berú obvod atiky; ostatné bm dĺžku; m² plochu.
+  const druhPolozky = (x) => {
+    const t = String(x.jednotka || '').trim().toLowerCase().replace(/\s+/g, '');
     if (t === 'm²' || t === 'm2') return 'plocha';
-    if (t === 'bm' || t === 'm') return 'dlzka';
+    if (t === 'bm' || t === 'm') return /atik/i.test(String(x.nazov)) ? 'atika' : 'dlzka';
     return null;
   };
-  function predvoleneMnozstvo(jednotka) {
-    const druh = druhJednotky(jednotka);
+  function predvoleneMnozstvo(polozka) {
+    const druh = druhPolozky(polozka);
     const v = druh ? num(stav.ponuka.vymery?.[druh]) : 0;
     return v || 1;
   }
@@ -882,7 +883,7 @@
     const nove = num(stav.ponuka.vymery?.[druh]);
     let zmena = false;
     stav.ponuka.polozky.forEach((x) => {
-      if (druhJednotky(x.jednotka) !== druh) return;
+      if (druhPolozky(x) !== druh) return;
       const m = num(x.mnozstvo);
       // prepíšeme len množstvá, ktoré nikto ručne nezmenil
       if (!m || m === stare || (m === 1 && !stare)) {
@@ -911,7 +912,7 @@
       else if (CISELNE.includes(t.name)) {
         const stare = num(getPath(p, t.name));
         setPath(p, t.name, num(t.value));
-        if (t.name.startsWith('vymery.')) prenesVymery(t.name === 'vymery.plocha' ? 'plocha' : 'dlzka', stare);
+        if (t.name.startsWith('vymery.')) prenesVymery(t.name.slice(7), stare);
       } else setPath(p, t.name, t.value);
     }
     stav.ponukaZmenena = true;
@@ -968,7 +969,7 @@
         b.type = 'button';
         b.innerHTML = `<span class="n">${esc(p.nazov)}</span><span class="cena${p.cena ? '' : ' nula'}">${p.cena ? `${eur.format(p.cena)} / ${esc(p.jednotka)}` : `bez ceny / ${esc(p.jednotka)}`}</span>`;
         b.addEventListener('click', () => {
-          stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: predvoleneMnozstvo(p.jednotka), cena: p.cena });
+          stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: predvoleneMnozstvo(p), cena: p.cena });
           stav.ponukaZmenena = true;
           pridaneVyberom += 1;
           vykresliPolozky();
@@ -1055,7 +1056,7 @@
   // ---------- Tlač / PDF ----------
   function vymeryText(p) {
     const v = p.vymery || {};
-    return [num(v.plocha) && `Plocha: ${cislo.format(num(v.plocha))} m²`, num(v.dlzka) && `Dĺžka: ${cislo.format(num(v.dlzka))} bm`].filter(Boolean).join('   ');
+    return [num(v.plocha) && `Plocha: ${cislo.format(num(v.plocha))} m²`, num(v.dlzka) && `Dĺžka: ${cislo.format(num(v.dlzka))} bm`, num(v.atika) && `Atika: ${cislo.format(num(v.atika))} bm`].filter(Boolean).join('   ');
   }
 
   function tlacovaVerzia() {

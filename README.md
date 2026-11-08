@@ -1,6 +1,6 @@
 # KMG stav – web
 
-Web pre KMG stav: strechy, chaty, prístrešky, altánky, pergoly a drevodomy.
+Web pre KMG stav: strechy, oplechovanie atík, chaty, prístrešky, altánky, pergoly a drevodomy.
 
 | Adresa | Čo tam je |
 |---|---|
@@ -62,13 +62,15 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   Pri nahrávaní sa fotky dajú voliteľne označiť **Pred realizáciou** / **Po realizácii** (aj neskôr ťuknutím
   na štítok pri fotke). Ak má zákazka fotky pred aj po, web ukáže interaktívne porovnanie s posuvnou čiarou –
   v albume zákazky aj v sekcii **Pred a po** na úvodnej stránke.
-- **Ponuky:** Nová ponuka → zákazník → **Výmery** (plocha v m², dĺžka v bm) → Pridať z cenníka
+- **Ponuky:** Nová ponuka → zákazník → **Výmery** (plocha v m², dĺžka v bm, atika v bm) → Pridať z cenníka
   (alebo vlastnú položku) → Uložiť. Výmery sa samé doplnia ako množstvo ku všetkým položkám v m² a bm;
   pri položke sa dajú ručne zmeniť (napr. fólia s presahom) a ručne zmenené sa potom neprepisujú.
+  Položky atiky v bm (oplechovanie, podkladová konštrukcia, demontáž) berú výmeru **Atika**, ostatné bm berú **Dĺžku**.
   **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
   **Poslať** (v mobile) ho rovno odošle cez WhatsApp, e-mail a pod.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
 - **Cenník** (v Ponukách): vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
+  Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
 
 ## Aplikácia v mobile (PWA)

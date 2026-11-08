@@ -233,7 +233,7 @@
       y -= 6;
     }
     const v = p.vymery || {};
-    const vymery = [num(v.plocha) && `Plocha: ${cislo.format(num(v.plocha))} m²`, num(v.dlzka) && `Dĺžka: ${cislo.format(num(v.dlzka))} bm`].filter(Boolean).join('      ');
+    const vymery = [num(v.plocha) && `Plocha: ${cislo.format(num(v.plocha))} m²`, num(v.dlzka) && `Dĺžka: ${cislo.format(num(v.dlzka))} bm`, num(v.atika) && `Atika: ${cislo.format(num(v.atika))} bm`].filter(Boolean).join('      ');
     if (vymery) { y -= 13; napis(vymery, OKRAJ, y, { size: 10, farba: SEDA }); y -= 4; }
 
     // Tabuľka položiek

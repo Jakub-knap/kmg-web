@@ -224,6 +224,12 @@ body.domov { background: var(--noc); }
 .ilu__lamely path:nth-child(6) { animation-delay: .4s !important; }
 @keyframes lamela { to { transform: scaleY(.3); } }
 
+.ilu__lista { transform-origin: center; }
+.karta:hover .ilu--atika .ilu__lista, .karta.zije .ilu--atika .ilu__lista { animation: lista 1.4s var(--krivka) infinite; }
+@keyframes lista { 0% { transform: translateY(-9px); } 45%, 100% { transform: none; } }
+.ilu__kvapky circle { fill: #5b8fc7; opacity: 0; transform-box: fill-box; }
+.karta:hover .ilu__kvapky circle, .karta.zije .ilu__kvapky circle { animation: kvapka 1.4s ease-in infinite .45s; }
+@keyframes kvapka { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: .9; } 100% { opacity: 0; transform: translateY(58px); } }
 .ilu__okno { fill: transparent; transition: fill .5s; }
 .karta:hover .ilu__okno, .karta.zije .ilu__okno { fill: #f3c35b; }
 
