@@ -101,7 +101,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 | Jednoduché operácie (čítanie súboru mimo cache) | 10 000 | návšteva webu ≈ 1 |
 
 - **Po prekročení limitu Vercel úložisko na 30 dní zablokuje** (zmiznú fotky na webe aj ponuky v aplikácii).
-  Vercel predtým pošle e-mail. Plán Pro (20 $ mesačne) limity nemá a je aj oficiálne určený na firemné použitie.
+  Vercel predtým pošle e-mail. Na pláne Pro (20 $ mesačne) sa úložisko neblokuje, spotreba nad rámec sa doplatí
+  (pri vašom objeme centy) a Pro je aj oficiálne určený na firemné použitie.
 - Web preto nečíta úložisko výpisom pri každej návšteve, ale jeden hotový súbor `verejne/web.json`,
   ktorý sa obnoví len pri zmene v aplikácii.
 - **Aj prezeranie súborov úložiska vo Vercel dashboarde (Storage → Browser) sa počíta do operácií** – zbytočne tam neklikajte.
