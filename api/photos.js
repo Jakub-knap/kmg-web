@@ -1,21 +1,23 @@
 // Fotky v zákazkách.
 //   GET    /api/photos                       – verejný zoznam všetkých fotiek (pre staršie verzie stránky)
-//   POST   /api/photos?zakazka=<zid>[&oznacenie=pred|po] – nahratie do zákazky (FormData: foto, nahlad)
+//   POST   /api/photos?zakazka=<zid>[&oznacenie=pred|po] – nahratie do zákazky (FormData: foto, nahlad);
+//                                               web sa obnoví až po celej dávke cez POST /api/verejne
 //   DELETE /api/photos?id=<zid>/<fid>        – zmazanie fotky (aj staršie <kategoria>/<fid>)
 import { deny, fail, json } from './_lib/auth.js';
-import { FID, KATEGORIE, nacitajGaleriu, nastavOznacenie, noveId, OZNACENIA, ZID } from './_lib/galeria.js';
+import { FID, KATEGORIE, nastavOznacenie, noveId, OZNACENIA, ZID } from './_lib/galeria.js';
 import { del, listAll, put } from './_lib/store.js';
+import { VEREJNA_CACHE, nacitajVerejne, skusObnovit } from './_lib/verejne.js';
 
 const MAX_BYTES = 4 * 1024 * 1024; // Vercel funkcia prijme najviac 4,5 MB
 
 export async function GET() {
   try {
-    const { zakazky, ine } = await nacitajGaleriu();
+    const { zakazky = [], ine = [] } = await nacitajVerejne();
     const fotky = [
       ...zakazky.flatMap((z) => z.fotky.map((f) => ({ ...f, kategoria: z.kategoria, zakazka: z.nazov }))),
       ...ine,
     ].sort((a, b) => b.cas - a.cas);
-    return json({ fotky }, 200, { 'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=120' });
+    return json({ fotky }, 200, VEREJNA_CACHE);
   } catch (e) {
     console.error(e);
     return fail(500, 'Fotky sa nepodarilo načítať. Skontrolujte, či je vo Verceli pripojené Blob úložisko.');
@@ -72,6 +74,7 @@ export async function DELETE(request) {
     const najdene = [...(await listAll(`galeria/${a}/${b}.`)), ...(await listAll(`nahlady/${a}/${b}.`))];
     if (!najdene.length) return fail(404, 'Fotka už neexistuje.');
     await del(najdene.map((x) => x.url));
+    await skusObnovit();
     return json({ ok: true });
   } catch (e) {
     console.error(e);

@@ -66,7 +66,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
 ## Ako sa to používa
 - **Fotky (zákazky):** Nová zákazka → názov (napr. „Rekonštrukcia strechy, Žilina“) a druh stavby →
-  Vytvoriť zákazku → **Pridať fotky**. Fotky sa v telefóne samé zmenšia a na webe sa objavia do pol minúty.
+  Vytvoriť zákazku → **Pridať fotky**. Fotky sa v telefóne samé zmenšia (najviac 2000 px, JPG, väčšinou 0,3–0,8 MB) a na webe sa objavia
+  do 2 minút po nahratí celej dávky.
   Každá zákazka je na webe jeden album. Na webe ostáva najviac **10** posledných zákaziek
   (počet sa dá zmeniť v aplikácii). Pri vytvorení ďalšej sa najstaršia zákazka **zmaže aj s fotkami**,
   aplikácia na to vopred upozorní. Zákazku aj jednotlivé fotky sa dá premenovať a zmazať.
@@ -89,7 +90,22 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
   Tie isté údaje sa zobrazujú aj **na webe**: telefóny (viac čísel oddeľte čiarkou) v úvode, v kontakte a v plávajúcom
-  tlačidle, e-mail a Facebook v kontakte, adresa, IČO, DIČ a IČ DPH v päte stránky. Na webe sa zmena prejaví do minúty.
+  tlačidle, e-mail a Facebook v kontakte, adresa, IČO, DIČ a IČ DPH v päte stránky. Na webe sa zmena prejaví do 2 minút.
+
+## Limity bezplatného úložiska (Vercel Blob, plán Hobby, mesačne)
+| Čo | Limit | Ako to vychádza |
+|---|---|---|
+| Miesto | 1 GB | fotka + náhľad ≈ 0,6 MB → asi 1 500 fotiek; 10 zákaziek po 30 fotkách ≈ 200 MB |
+| Prenos | 10 GB | stovky návštevníkov, ktorí si prezerajú veľké fotky |
+| Pokročilé operácie (nahratie, výpis súborov) | 2 000 | nahratie fotky = 2, uloženie ponuky/zákazky/údajov ≈ 2–4, otvorenie aplikácie ≈ 3; **návštevy webu = 0** |
+| Jednoduché operácie (čítanie súboru mimo cache) | 10 000 | návšteva webu ≈ 1 |
+
+- **Po prekročení limitu Vercel úložisko na 30 dní zablokuje** (zmiznú fotky na webe aj ponuky v aplikácii).
+  Vercel predtým pošle e-mail. Plán Pro (20 $ mesačne) limity nemá a je aj oficiálne určený na firemné použitie.
+- Web preto nečíta úložisko výpisom pri každej návšteve, ale jeden hotový súbor `verejne/web.json`,
+  ktorý sa obnoví len pri zmene v aplikácii.
+- **Aj prezeranie súborov úložiska vo Vercel dashboarde (Storage → Browser) sa počíta do operácií** – zbytočne tam neklikajte.
+- Spotreba sa dá pozrieť vo Verceli: **Storage → kmg-web-blob → Usage** (alebo Observability → Blob).
 
 ## Aplikácia v mobile (PWA)
 Správa webu sa dá nainštalovať na plochu telefónu ako aplikácia s ikonou KMG:
@@ -105,8 +121,13 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 - Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh, označenia pred/po), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
   staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json` (firma, `cenniky[]`, galéria),
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
-- Verejné `GET /api/firma` vracia údaje o firme pre web (bez IBAN a bez vymyslených predvolených hodnôt);
-  `site.js` nimi prepíše telefóny, e-mail, Facebook a pätu. V HTML ostávajú telefóny a e-mail ako záloha.
+- Verejný web volá len `GET /api/web` (zákazky, limit a údaje o firme bez IBAN a bez vymyslených hodnôt).
+  Odpoveď sa číta zo súboru `verejne/web.json` (prepisuje sa, cache 60 s), nie výpisom úložiska.
+  Súbor obnovujú zmeny zákaziek, označení a mazanie fotiek priamo na serveri, po dávke fotiek
+  `POST /api/verejne` z aplikácie a uloženie údajov o firme alebo limitu (`PUT /api/settings?verejne=1`).
+  Aplikácia (prihlásený používateľ) dostáva z `GET /api/zakazky` čerstvý stav jedným výpisom celého úložiska.
+  `GET /api/zakazky`, `/api/firma` a `/api/photos` bez prihlásenia vracajú tiež len dáta z verejného súboru.
+- `site.js` prepíše telefóny, e-mail, Facebook a pätu údajmi z aplikácie; v HTML ostávajú telefóny a e-mail ako záloha.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.
 - PDF ponuky sa vytvára priamo v prehliadači (knižnica pdf-lib, MIT) s vloženým písmom KMG Pismo –

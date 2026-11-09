@@ -80,9 +80,13 @@ export async function orezNaLimit(limit) {
   return zmazane;
 }
 
-/** Celá galéria: zákazky s fotkami (od najnovšej) a staršie fotky bez zákazky. */
-export async function nacitajGaleriu() {
-  const [meta, plne, nahlady] = await Promise.all([listAll('zakazky/'), listAll('galeria/'), listAll('nahlady/')]);
+/**
+ * Celá galéria: zákazky s fotkami (od najnovšej) a staršie fotky bez zákazky.
+ * `vsetky` = hotový výpis celého úložiska (ušetrí operácie list); bez neho sa vypíšu priečinky zvlášť.
+ */
+export async function nacitajGaleriu(vsetky) {
+  const vypis = (prefix) => (vsetky ? vsetky.filter((b) => b.pathname.startsWith(prefix)) : listAll(prefix));
+  const [meta, plne, nahlady] = await Promise.all([vypis('zakazky/'), vypis('galeria/'), vypis('nahlady/')]);
   const najnovsie = new Map();
   for (const b of meta) {
     const zid = b.pathname.split('/')[1];

@@ -449,7 +449,7 @@
     const predtym = stav.nastavenia.galeria?.maxZakaziek ?? stav.galeria.max;
     stav.nastavenia.galeria = { ...(stav.nastavenia.galeria || {}), maxZakaziek: n };
     try {
-      await ulozNastavenia();
+      await ulozNastavenia(true);
       stav.galeria.max = n;
       vykresliZakazky();
       oznam(`Na webe bude najviac ${n} zákaziek`);
@@ -562,7 +562,15 @@
     for (let i = 0; i < subory.length; i += 1) {
       if (await nahraj(subory[i], z, polozky[i], el, oznacenie)) ok += 1;
     }
-    if (ok) oznam(`Pridané do zákazky: ${pocetFotiek(ok)}`);
+    if (ok) {
+      oznam(`Pridané do zákazky: ${pocetFotiek(ok)}`);
+      // web sa obnoví raz za celú dávku (šetrí operácie úložiska)
+      try {
+        await api('/api/verejne', { method: 'POST' });
+      } catch {
+        oznam('Fotky sú uložené, ale web sa neobnovil. Obnoví sa pri ďalšej zmene v aplikácii.', true);
+      }
+    }
     aktualizujVarovanie();
   }
 
@@ -578,8 +586,9 @@
     }
   }
 
-  async function ulozNastavenia() {
-    stav.nastavenia = await api('/api/settings', { method: 'PUT', body: stav.nastavenia });
+  // verejne = true: zmena sa týka aj webu (údaje o firme, limit zákaziek), server ho obnoví
+  async function ulozNastavenia(verejne = false) {
+    stav.nastavenia = await api(`/api/settings${verejne ? '?verejne=1' : ''}`, { method: 'PUT', body: stav.nastavenia });
   }
 
   // ---------- Cenníky: Cenník, Cena práce a vlastné kategórie ----------
@@ -842,7 +851,7 @@
     const zaloha = stav.nastavenia.firma;
     stav.nastavenia.firma = f;
     try {
-      await ulozNastavenia();
+      await ulozNastavenia(true);
       vyplnFirmu();
       oznam('Údaje na ponuke uložené');
     } catch (err) {

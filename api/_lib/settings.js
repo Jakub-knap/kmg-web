@@ -104,8 +104,9 @@ export function clean(input) {
   return { firma, cenniky, galeria, migracie };
 }
 
-export async function loadSettings() {
-  const blob = newest(await listAll(FOLDER));
+/** `vsetky` = hotový výpis celého úložiska (ušetrí jednu operáciu list). */
+export async function loadSettings(vsetky) {
+  const blob = newest(vsetky ? vsetky.filter((b) => b.pathname.startsWith(FOLDER)) : await listAll(FOLDER));
   if (!blob) return { ...structuredClone(DEFAULT_SETTINGS), migracie: [...MIGRACIE] };
   const data = await readJson(blob);
   const migracie = Array.isArray(data.migracie) ? [...data.migracie] : [];

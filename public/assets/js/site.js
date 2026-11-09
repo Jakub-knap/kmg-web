@@ -158,11 +158,18 @@
       }));
     });
   }
+  // Údaje webu (zákazky aj firma) jedným volaním; prehliadač sa vždy pýta servera (no-cache),
+  // aby po zmene v aplikácii neukazoval staršiu kópiu.
+  let webData;
+  const nacitajWeb = () => {
+    webData ||= fetch('/api/web', { cache: 'no-cache' }).then((r) => {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    });
+    return webData;
+  };
   if (document.querySelector('[data-firma-udaje], [data-tel], [data-email]')) {
-    fetch('/api/firma', { cache: 'no-cache' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((f) => { if (f) vyplnFirmu(f); })
-      .catch(() => {});
+    nacitajWeb().then((d) => { if (d?.firma) vyplnFirmu(d.firma); }).catch(() => {});
   }
 
   const mriezka = document.querySelector('[data-galeria]');
@@ -215,9 +222,7 @@
   async function nacitaj() {
     if (!mriezka) return;
     try {
-      const res = await fetch('/api/zakazky', { cache: 'no-cache' });
-      if (!res.ok) throw new Error(res.status);
-      const d = await res.json();
+      const d = await nacitajWeb();
       const max = d.max || 10;
       albumy = (d.zakazky || []).slice(0, max).filter((z) => z.fotky.length);
       // Staršie fotky bez zákazky – jeden album za každý druh stavby
