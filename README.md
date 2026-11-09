@@ -44,11 +44,12 @@ Nastavenie vo Websupporte (**Služby → kmgstav.sk → DNS → DNS nastavenia**
 | Typ | Pre adresu | Hodnota |
 |---|---|---|
 | A | (prázdne) = `kmgstav.sk` | `216.198.79.1` |
-| CNAME | `www` | `cname.vercel-dns.com` |
+| CNAME | `www` | `3977eb96c3b259f0.vercel-dns-017.com.` |
 
 - Zmazané boli: A a AAAA pre `kmgstav.sk` a `www.kmgstav.sk` (pôvodne smerovali na server Websupportu).
 - Nechané bez zmeny: `*`, `admin`, `mail`, `webmail`, `smtp`, `pop3`, `imap`, `autodiscover`, `autoconfig`, MX, TXT.
-- Vercel ukazuje aj vlastný CNAME cieľ projektu (`3977eb96…`); `cname.vercel-dns.com` podľa Vercelu funguje ďalej.
+- CNAME je vlastný cieľ projektu podľa Vercelu. Starší všeobecný `cname.vercel-dns.com` tiež funguje,
+  Vercel pri ňom len ukazuje žlté „DNS Change Recommended“.
 - Ak by sa doména niekedy pridávala nanovo: Vercel → projekt `kmg-web` → **Settings → Domains → Add Existing**.
   Hodnoty vždy overte na karte domény vo Verceli (**View DNS configuration**).
 - Chyba `ERR_CERT_COMMON_NAME_INVALID` hneď po zmene DNS je normálna. Zmizne, keď Vercel dokončí
