@@ -36,15 +36,23 @@ V projekte **Settings → Environment Variables** pridajte:
 Potom **Deployments → … → Redeploy**, aby sa heslá načítali.
 Zmena hesla odhlási všetkých, ktorí boli prihlásení.
 
-### 5. Doména z Websupportu (kmgstav.sk)
-1. Vo Verceli: projekt `kmg-web` → **Settings → Domains → Add** → `kmgstav.sk`. Ako hlavnú nechajte
-   `kmgstav.sk` a `www.kmgstav.sk` nech na ňu presmeruje.
-2. Vercel na karte domény ukáže presné DNS záznamy: **A** pre `@` (zvyčajne `76.76.21.21`)
-   a **CNAME** pre `www` (cieľ podľa karty, napr. `xxxx.vercel-dns-017.com.`).
-3. Vo Websupporte: **Služby → kmgstav.sk → DNS**. Zmažte existujúce záznamy **A, AAAA a ANAME** pre samotnú
-   doménu (`@`) a pre `www` – ostatné (MX, TXT…) nechajte. Pridajte A a CNAME presne podľa Vercelu.
-4. Zmena sa prejaví zvyčajne do pol hodiny, najneskôr do pár hodín. Keď Vercel ukáže **Valid Configuration**,
-   HTTPS certifikát nastaví sám.
+### 5. Doména z Websupportu (kmgstav.sk) – napojená 9. 11. 2026
+Hlavná adresa je `www.kmgstav.sk`, `kmgstav.sk` na ňu presmeruje (voľba Vercelu „Redirect apex domains to www“).
+
+Nastavenie vo Websupporte (**Služby → kmgstav.sk → DNS → DNS nastavenia**):
+
+| Typ | Pre adresu | Hodnota |
+|---|---|---|
+| A | (prázdne) = `kmgstav.sk` | `216.198.79.1` |
+| CNAME | `www` | `cname.vercel-dns.com` |
+
+- Zmazané boli: A a AAAA pre `kmgstav.sk` a `www.kmgstav.sk` (pôvodne smerovali na server Websupportu).
+- Nechané bez zmeny: `*`, `admin`, `mail`, `webmail`, `smtp`, `pop3`, `imap`, `autodiscover`, `autoconfig`, MX, TXT.
+- Vercel ukazuje aj vlastný CNAME cieľ projektu (`3977eb96…`); `cname.vercel-dns.com` podľa Vercelu funguje ďalej.
+- Ak by sa doména niekedy pridávala nanovo: Vercel → projekt `kmg-web` → **Settings → Domains → Add Existing**.
+  Hodnoty vždy overte na karte domény vo Verceli (**View DNS configuration**).
+- Chyba `ERR_CERT_COMMON_NAME_INVALID` hneď po zmene DNS je normálna. Zmizne, keď Vercel dokončí
+  certifikát („Generating SSL Certificate“ → „Valid Configuration“).
 
 E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
