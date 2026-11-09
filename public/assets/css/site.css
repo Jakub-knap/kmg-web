@@ -262,5 +262,8 @@ a { color: inherit; }
 .pata p { margin: 0; }
 .pata strong { color: var(--biela); }
 .pata a { color: #cfcdc8; }
+.pata__udaje { display: grid; gap: .15rem; margin-top: .25rem; }
+.pata__udaje:empty { display: none; }
+[data-tel][hidden] { display: none !important; }
 
 .skryte { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -217,7 +217,8 @@
       <main class="obal panel" data-panel="firma" hidden>
         <a class="spat" href="#ponuky">Späť na ponuky</a>
         <h1>Údaje na ponuke</h1>
-        <p class="napoveda">Tieto údaje sa tlačia v hlavičke cenovej ponuky.</p>
+        <p class="napoveda">Tlačia sa na cenových ponukách a zobrazujú sa aj na webe (kontakt a päta stránky). Na webe sa zmena prejaví do minúty.</p>
+        <p class="varovanie" data-vymyslene hidden>IČO, DIČ alebo adresa sú zatiaľ vymyslené. Na ponukách sa tlačia, na webe sa nezobrazia, kým ich neprepíšete.</p>
         <form data-firma novalidate>
           <div class="polia">
             <label class="cela">Názov firmy<input name="nazov"></label>
@@ -226,9 +227,10 @@
             <label>DIČ<input name="dic"></label>
             <label>IČ DPH<input name="icdph" placeholder="len ak ste platcom DPH"></label>
             <label>IBAN<input name="iban"></label>
-            <label>Telefón<input name="telefon"></label>
+            <label>Telefón<input name="telefon" placeholder="viac čísel oddeľte čiarkou"></label>
             <label>E-mail<input name="email" type="email"></label>
             <label>Web<input name="web"></label>
+            <label class="cela">Facebook stránka<input name="facebook" type="url" inputmode="url" placeholder="https://www.facebook.com/…"></label>
             <label>Platnosť ponuky (dni)<input name="platnostDni" inputmode="numeric"></label>
             <label class="zaskrtavatko"><input name="platcaDph" type="checkbox"> Sme platcami DPH</label>
             <label>Sadzba DPH (%)<input name="sadzbaDph" inputmode="decimal"></label>

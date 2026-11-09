@@ -84,6 +84,87 @@
 
   document.querySelectorAll('[data-rok]').forEach((el) => { el.textContent = new Date().getFullYear(); });
 
+  // Údaje o firme zo správy webu (Ponuky → Údaje na ponuke): päta, telefóny, e-mail, Facebook.
+  // V HTML ostávajú telefóny a e-mail ako záloha, keby sa údaje nenačítali.
+  function telOdkaz(cislo) {
+    let c = cislo.replace(/[^\d+]/g, '');
+    if (c.startsWith('00')) c = `+${c.slice(2)}`;
+    else if (c.startsWith('0')) c = `+421${c.slice(1)}`;
+    return `tel:${c}`;
+  }
+  function nastavCislo(el, text) {
+    const teraz = el.getAttribute('aria-label') || el.textContent.replace(/\s+/g, ' ').trim();
+    if (teraz === text) return;
+    if (el.querySelector('.cislica')) {
+      // číslo už rozdelené na číslice (animácia na úvodnej stránke)
+      el.setAttribute('aria-label', text);
+      el.replaceChildren(...[...text].map((c, i) => {
+        if (c === ' ') return document.createTextNode(' ');
+        const s = document.createElement('span');
+        s.className = 'cislica';
+        s.style.setProperty('--i', i);
+        s.setAttribute('aria-hidden', 'true');
+        s.textContent = c;
+        return s;
+      }));
+    } else {
+      el.textContent = text;
+    }
+  }
+  function vyplnFirmu(f) {
+    const tel = Array.isArray(f.telefony) ? f.telefony : [];
+    if (tel.length) {
+      const zoznam = document.querySelector('[data-telefony]');
+      if (zoznam) {
+        const vzor = zoznam.querySelector('[data-tel]');
+        for (let i = zoznam.querySelectorAll('[data-tel]').length; i < tel.length && vzor; i++) {
+          const novy = vzor.cloneNode(false);
+          novy.dataset.tel = String(i);
+          novy.removeAttribute('aria-label');
+          zoznam.append(novy);
+        }
+      }
+      document.querySelectorAll('[data-tel]').forEach((el) => {
+        const cislo = tel[Number(el.dataset.tel)];
+        if (!cislo) { el.hidden = true; return; }
+        el.hidden = false;
+        el.href = telOdkaz(cislo);
+        const miesto = el.hasAttribute('data-tel-cislo') ? el : el.querySelector('[data-tel-cislo]');
+        if (miesto) nastavCislo(miesto, cislo);
+        if (el.hasAttribute('data-tel-label')) el.setAttribute('aria-label', `Zavolať ${cislo}`);
+      });
+    }
+    if (f.email) {
+      document.querySelectorAll('[data-email]').forEach((el) => {
+        if (el.hasAttribute('data-kopiruj')) el.dataset.kopiruj = f.email;
+        else el.href = `mailto:${f.email}`;
+        if (el.hasAttribute('data-email-text')) el.textContent = f.email;
+      });
+    }
+    if (f.facebook) {
+      document.querySelectorAll('[data-facebook]').forEach((el) => { el.href = f.facebook; });
+    }
+    document.querySelectorAll('[data-firma-nazov]').forEach((el) => { if (f.nazov) el.textContent = f.nazov; });
+    const ids = [
+      f.ico && `IČO: ${f.ico}`,
+      f.dic && `DIČ: ${f.dic}`,
+      f.icdph && `IČ DPH: ${f.icdph}`,
+    ].filter(Boolean).join(', ');
+    document.querySelectorAll('[data-firma-udaje]').forEach((el) => {
+      el.replaceChildren(...[f.adresa, ids].filter(Boolean).map((riadok) => {
+        const p = document.createElement('p');
+        p.textContent = riadok;
+        return p;
+      }));
+    });
+  }
+  if (document.querySelector('[data-firma-udaje], [data-tel], [data-email]')) {
+    fetch('/api/firma', { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((f) => { if (f) vyplnFirmu(f); })
+      .catch(() => {});
+  }
+
   const mriezka = document.querySelector('[data-galeria]');
   const filtre = document.querySelector('[data-filtre]');
   const limit = Number(mriezka?.dataset.pocet) || 0;
@@ -134,7 +215,7 @@
   async function nacitaj() {
     if (!mriezka) return;
     try {
-      const res = await fetch('/api/zakazky');
+      const res = await fetch('/api/zakazky', { cache: 'no-cache' });
       if (!res.ok) throw new Error(res.status);
       const d = await res.json();
       const max = d.max || 10;

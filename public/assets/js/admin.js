@@ -817,6 +817,8 @@
 
   // Firma
   const formFirma = $('[data-firma]');
+  // Predvolené vymyslené údaje (rovnaké ako v api/_lib/defaults.js) – web ich nezobrazuje.
+  const VYMYSLENE = { ico: '12 345 678', dic: '1234567890', adresa: 'Ulica 1, 000 00 Obec' };
   function vyplnFirmu() {
     const f = stav.nastavenia.firma;
     for (const el of formFirma.elements) {
@@ -824,6 +826,7 @@
       if (el.type === 'checkbox') el.checked = Boolean(f[el.name]);
       else el.value = el.name === 'sadzbaDph' || el.name === 'platnostDni' ? vstup(f[el.name]) : f[el.name] ?? '';
     }
+    $('[data-vymyslene]').hidden = !Object.entries(VYMYSLENE).some(([k, v]) => (f[k] || '').trim() === v);
   }
   formFirma.addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -49,9 +49,9 @@
           </h1>
           <p class="hero__popis">Nové strechy a rekonštrukcie, oplechovanie atík, chaty, drevodomy, prístrešky, altánky a pergoly.</p>
           <div class="akcie">
-            <a class="tlacidlo" href="tel:+421951259327" data-magnet>
+            <a class="tlacidlo" href="tel:+421951259327" data-magnet data-tel="0">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
-              0951 259 327
+              <span data-tel-cislo>0951 259 327</span>
             </a>
             <a class="tlacidlo tlacidlo--obrys" href="#realizacie" data-magnet>Pozrieť realizácie</a>
           </div>
@@ -291,16 +291,16 @@
       <div class="obal">
         <h2 id="kontakt-nadpis" data-rozdel>Keď prší, budete v suchu.</h2>
         <p class="kontakt__popis" data-odhal>Zavolajte alebo napíšte. Prídeme na obhliadku a pripravíme cenovú ponuku.</p>
-        <div class="telefony-velke" data-odhal>
-          <a href="tel:+421951259327" data-cislice>0951 259 327</a>
-          <a href="tel:+421914138335" data-cislice>0914 138 335</a>
+        <div class="telefony-velke" data-odhal data-telefony>
+          <a href="tel:+421951259327" data-cislice data-tel="0" data-tel-cislo>0951 259 327</a>
+          <a href="tel:+421914138335" data-cislice data-tel="1" data-tel-cislo>0914 138 335</a>
         </div>
         <div class="kontakt__dalsie" data-odhal>
           <div class="email-riadok">
-            <a href="mailto:kmg.stav@gmail.com">kmg.stav@gmail.com</a>
-            <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-kopiruj="kmg.stav@gmail.com">Kopírovať e-mail</button>
+            <a href="mailto:kmg.stav@gmail.com" data-email data-email-text>kmg.stav@gmail.com</a>
+            <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-kopiruj="kmg.stav@gmail.com" data-email>Kopírovať e-mail</button>
           </div>
-          <a href="https://www.facebook.com/search/top?q=KMG%20stav" rel="noopener" target="_blank">KMG stav na Facebooku</a>
+          <a href="https://www.facebook.com/search/top?q=KMG%20stav" rel="noopener" target="_blank" data-facebook>KMG stav na Facebooku</a>
         </div>
         <p class="dazd-napoveda" aria-hidden="true">Pohnite kurzorom alebo ťuknite: strecha vás ochráni pred dažďom.</p>
       </div>
@@ -310,14 +310,14 @@
   <footer class="pata">
     <div class="obal">
       <div>
-        <p><strong>KMG stav</strong></p>
-        <p>IČO: 12 345 678, DIČ: 1234567890</p>
+        <p><strong data-firma-nazov>KMG stav</strong></p>
+        <div class="pata__udaje" data-firma-udaje></div>
       </div>
       <p>© <span data-rok>2026</span> KMG stav. <a href="/admin" rel="nofollow">Správa webu</a></p>
     </div>
   </footer>
 
-  <a class="fab" href="tel:+421951259327" aria-label="Zavolať 0951 259 327" data-fab>
+  <a class="fab" href="tel:+421951259327" aria-label="Zavolať 0951 259 327" data-fab data-tel="0" data-tel-label>
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
   </a>
 

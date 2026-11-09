@@ -58,11 +58,10 @@ Nastavenie vo Websupporte (**Služby → kmgstav.sk → DNS → DNS nastavenia**
 E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
 ## Čo ešte doplniť
-- **IČO a DIČ sú vymyslené.** Opravte ich v `public/index.html` a `public/galeria.html` (päta stránky)
-  a v správe webu v **Ponuky → Údaje na ponuke** (tie sa tlačia na ponuky).
-- **Adresa** – v **Ponuky → Údaje na ponuke**.
-- **Facebook** – v `public/index.html` je zatiaľ odkaz na vyhľadávanie „KMG stav“.
-  Nahraďte ho priamou adresou stránky (napr. `https://www.facebook.com/...`).
+- **IČO, DIČ a adresa sú vymyslené.** Prepíšte ich v aplikácii v **Ponuky → Údaje na ponuke**.
+  Kým sú vymyslené, web ich nezobrazuje (na ponukách sa tlačia) a aplikácia na to upozorňuje.
+- **Facebook** – adresu stránky zadajte tamtiež (pole Facebook stránka). Kým je prázdne,
+  odkaz na webe vedie na vyhľadávanie „KMG stav“ na Facebooku.
 - **Ceny v cenníku** sú nastavené na 0 €. Položky bez ceny sú v Cenníku zvýraznené.
 
 ## Ako sa to používa
@@ -89,6 +88,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   V ponuke sa cena dá vždy zmeniť.
   Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
+  Tie isté údaje sa zobrazujú aj **na webe**: telefóny (viac čísel oddeľte čiarkou) v úvode, v kontakte a v plávajúcom
+  tlačidle, e-mail a Facebook v kontakte, adresa, IČO, DIČ a IČ DPH v päte stránky. Na webe sa zmena prejaví do minúty.
 
 ## Aplikácia v mobile (PWA)
 Správa webu sa dá nainštalovať na plochu telefónu ako aplikácia s ikonou KMG:
@@ -104,6 +105,8 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 - Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh, označenia pred/po), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
   staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json` (firma, `cenniky[]`, galéria),
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
+- Verejné `GET /api/firma` vracia údaje o firme pre web (bez IBAN a bez vymyslených predvolených hodnôt);
+  `site.js` nimi prepíše telefóny, e-mail, Facebook a pätu. V HTML ostávajú telefóny a e-mail ako záloha.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.
 - PDF ponuky sa vytvára priamo v prehliadači (knižnica pdf-lib, MIT) s vloženým písmom KMG Pismo –

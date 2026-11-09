@@ -1,5 +1,6 @@
 // Predvolené nastavenia. Po prvom uložení v správe webu sa používajú uložené hodnoty.
-// IČO a DIČ sú zatiaľ vymyslené – opravte ich v správe webu v záložke Firma.
+// IČO, DIČ a adresa sú zatiaľ vymyslené – opravte ich v správe webu v Ponuky → Údaje na ponuke.
+// Kým sa neprepíšu, web ich nezobrazuje (pozri VYMYSLENE).
 export const DEFAULT_SETTINGS = {
   galeria: {
     maxZakaziek: 10, // koľko posledných zákaziek ostane na webe
@@ -13,6 +14,7 @@ export const DEFAULT_SETTINGS = {
     telefon: '0951 259 327, 0914 138 335',
     email: 'kmg.stav@gmail.com',
     web: 'kmgstav.sk',
+    facebook: '',
     iban: '',
     platcaDph: false,
     sadzbaDph: 23,
@@ -63,4 +65,11 @@ export const DEFAULT_SETTINGS = {
       { kategoria: 'Práca podľa výmery', nazov: 'Klampiarske práce – za bm', jednotka: 'bm', cena: 0 },
     ] },
   ],
+};
+
+// Vymyslené údaje z predvolených nastavení – na verejnom webe sa nezobrazujú.
+export const VYMYSLENE = {
+  ico: DEFAULT_SETTINGS.firma.ico,
+  dic: DEFAULT_SETTINGS.firma.dic,
+  adresa: DEFAULT_SETTINGS.firma.adresa,
 };
