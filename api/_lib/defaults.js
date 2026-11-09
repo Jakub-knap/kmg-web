@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS = {
     icdph: '',
     telefon: '0951 259 327, 0914 138 335',
     email: 'kmg.stav@gmail.com',
-    web: 'kmg.sk',
+    web: 'kmgstav.sk',
     iban: '',
     platcaDph: false,
     sadzbaDph: 23,

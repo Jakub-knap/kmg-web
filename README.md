@@ -4,10 +4,10 @@ Web pre KMG stav: strechy, oplechovanie atík, chaty, prístrešky, altánky, pe
 
 | Adresa | Čo tam je |
 |---|---|
-| `kmg.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
-| `kmg.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
-| `kmg.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník, Cena práce, vlastné kategórie a údaje na ponuke sú v Ponukách. |
-| `kmg.sk/fotky`, `kmg.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
+| `kmgstav.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
+| `kmgstav.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
+| `kmgstav.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník, Cena práce, vlastné kategórie a údaje na ponuke sú v Ponukách. |
+| `kmgstav.sk/fotky`, `kmgstav.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
 ## Nasadenie (raz, asi 15 minút)
 
@@ -36,12 +36,15 @@ V projekte **Settings → Environment Variables** pridajte:
 Potom **Deployments → … → Redeploy**, aby sa heslá načítali.
 Zmena hesla odhlási všetkých, ktorí boli prihlásení.
 
-### 5. Doména z Websupportu
-1. Vo Verceli: **Settings → Domains → Add**, zadajte `kmg.sk` a potom aj `www.kmg.sk`.
-2. Vercel ukáže DNS záznamy, ktoré treba nastaviť (A záznam pre `kmg.sk`, CNAME pre `www`).
-3. Vo Websupport admine: **Domény → kmg.sk → DNS**. Zmažte staré A/AAAA záznamy pre `@` a `www`
-   (ak smerujú na Websupport hosting) a pridajte presne tie, ktoré ukázal Vercel.
-4. Zmena sa prejaví do pár hodín. HTTPS certifikát nastaví Vercel sám.
+### 5. Doména z Websupportu (kmgstav.sk)
+1. Vo Verceli: projekt `kmg-web` → **Settings → Domains → Add** → `kmgstav.sk`. Ako hlavnú nechajte
+   `kmgstav.sk` a `www.kmgstav.sk` nech na ňu presmeruje.
+2. Vercel na karte domény ukáže presné DNS záznamy: **A** pre `@` (zvyčajne `76.76.21.21`)
+   a **CNAME** pre `www` (cieľ podľa karty, napr. `xxxx.vercel-dns-017.com.`).
+3. Vo Websupporte: **Služby → kmgstav.sk → DNS**. Zmažte existujúce záznamy **A, AAAA a ANAME** pre samotnú
+   doménu (`@`) a pre `www` – ostatné (MX, TXT…) nechajte. Pridajte A a CNAME presne podľa Vercelu.
+4. Zmena sa prejaví zvyčajne do pol hodiny, najneskôr do pár hodín. Keď Vercel ukáže **Valid Configuration**,
+   HTTPS certifikát nastaví sám.
 
 E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
@@ -80,9 +83,9 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 
 ## Aplikácia v mobile (PWA)
 Správa webu sa dá nainštalovať na plochu telefónu ako aplikácia s ikonou KMG:
-- **Android (Chrome):** otvorte `kmg.sk/admin` a ťuknite na **Inštalovať appku** v hlavičke
+- **Android (Chrome):** otvorte `kmgstav.sk/admin` a ťuknite na **Inštalovať appku** v hlavičke
   (alebo menu ⋮ → **Pridať na plochu**).
-- **iPhone (Safari):** otvorte `kmg.sk/admin`, ťuknite **Zdieľať** → **Pridať na plochu**.
+- **iPhone (Safari):** otvorte `kmgstav.sk/admin`, ťuknite **Zdieľať** → **Pridať na plochu**.
 
 Po dlhom podržaní ikony sú skratky **Pridať fotky** a **Nová cenová ponuka**.
 Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a ponuky sa načítajú až po pripojení.

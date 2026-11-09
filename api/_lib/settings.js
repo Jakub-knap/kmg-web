@@ -122,7 +122,7 @@ export async function loadSettings() {
   }
   if (!migracie.includes('cenniky')) migracie.push('cenniky');
   return {
-    firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) },
+    firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}), ...(data.firma?.web === 'kmg.sk' ? { web: 'kmgstav.sk' } : {}) },
     cenniky,
     galeria: { ...DEFAULT_SETTINGS.galeria, ...(data.galeria || {}) },
     migracie,
