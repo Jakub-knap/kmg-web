@@ -1,7 +1,7 @@
 // KMG stav – service worker pre aplikáciu správy webu.
 // Stránky a súbory berie vždy najprv z internetu, bez pripojenia použije poslednú uloženú kópiu.
 // API (fotky, ponuky, prihlásenie) sa nikdy neukladá.
-const CACHE = 'kmg-v8';
+const CACHE = 'kmg-v9';
 const ZAKLAD = [
   '/admin',
   '/assets/css/site.css',

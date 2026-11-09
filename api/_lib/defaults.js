@@ -19,7 +19,9 @@ export const DEFAULT_SETTINGS = {
     platnostDni: 30,
     pata: 'Ďakujeme za záujem. Ponuka je nezáväzná, konečná cena sa môže zmeniť podľa skutočného rozsahu prác.',
   },
-  cennik: [
+  // Cenníky: hlavný cenník, cena práce a vlastné kategórie (každá je samostatný zoznam položiek)
+  cenniky: [
+    { id: 'cennik', nazov: 'Cenník', polozky: [
     { kategoria: 'Strechy', nazov: 'Demontáž starej krytiny', jednotka: 'm²', cena: 0 },
     { kategoria: 'Strechy', nazov: 'Krov – výroba a montáž', jednotka: 'm²', cena: 0 },
     { kategoria: 'Strechy', nazov: 'Paropriepustná fólia', jednotka: 'm²', cena: 0 },
@@ -51,5 +53,14 @@ export const DEFAULT_SETTINGS = {
     { kategoria: 'Ostatné', nazov: 'Doprava', jednotka: 'km', cena: 0 },
     { kategoria: 'Ostatné', nazov: 'Lešenie', jednotka: 'm²', cena: 0 },
     { kategoria: 'Ostatné', nazov: 'Odvoz a likvidácia odpadu', jednotka: 'paušál', cena: 0 },
+    ] },
+    { id: 'praca', nazov: 'Cena práce', polozky: [
+      { kategoria: 'Hodinové sadzby', nazov: 'Pokrývač – hodinová sadzba', jednotka: 'hod', cena: 0 },
+      { kategoria: 'Hodinové sadzby', nazov: 'Klampiar – hodinová sadzba', jednotka: 'hod', cena: 0 },
+      { kategoria: 'Hodinové sadzby', nazov: 'Tesár – hodinová sadzba', jednotka: 'hod', cena: 0 },
+      { kategoria: 'Hodinové sadzby', nazov: 'Pomocník – hodinová sadzba', jednotka: 'hod', cena: 0 },
+      { kategoria: 'Práca podľa výmery', nazov: 'Práca na streche – za m²', jednotka: 'm²', cena: 0 },
+      { kategoria: 'Práca podľa výmery', nazov: 'Klampiarske práce – za bm', jednotka: 'bm', cena: 0 },
+    ] },
   ],
 };

@@ -6,7 +6,7 @@ Web pre KMG stav: strechy, oplechovanie atík, chaty, prístrešky, altánky, pe
 |---|---|
 | `kmg.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
 | `kmg.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
-| `kmg.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník a údaje na ponuke sú v Ponukách. |
+| `kmg.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník, Cena práce, vlastné kategórie a údaje na ponuke sú v Ponukách. |
 | `kmg.sk/fotky`, `kmg.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
 ## Nasadenie (raz, asi 15 minút)
@@ -69,7 +69,12 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
   **Poslať** (v mobile) ho rovno odošle cez WhatsApp, e-mail a pod.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
-- **Cenník** (v Ponukách): vlastné kategórie, položky, jednotky a ceny bez DPH. V ponuke sa cena dá vždy zmeniť.
+- **Cenník, Cena práce a vlastné kategórie** (tlačidlá hore v Ponukách): každá je samostatný zoznam položiek
+  s jednotkami a cenami bez DPH. **+ Nová kategória** vytvorí ďalší zoznam (napr. Materiál, Doprava, Lešenie),
+  ktorý sa dá premenovať aj zmazať; Cenník a Cena práce sa zmazať nedajú. V ponuke sa položky pridávajú
+  cez **Pridať z cenníka** (karty podľa kategórií, hľadanie vo všetkých). Ak sú v ponuke položky z viacerých
+  kategórií, editor aj PDF ich zoskupia a ukážu súčet za každú kategóriu zvlášť (napr. Cenník, Cena práce).
+  V ponuke sa cena dá vždy zmeniť.
   Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
 
@@ -84,8 +89,8 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 
 ## Technika (pre programátora)
 - Statické stránky v `public/` (HTML, CSS, JS bez buildu), funkcie vo `api/` (Vercel Functions, Node).
-- Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
-  staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json`,
+- Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh, označenia pred/po), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
+  staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json` (firma, `cenniky[]`, galéria),
   `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.
 - Ponuky sú uložené v úložisku ako súbory s náhodnými, neuhádnuteľnými adresami a zoznam vidí len admin.

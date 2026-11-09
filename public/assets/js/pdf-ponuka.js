@@ -262,8 +262,40 @@
       y -= 8;
     }
     hlavickaTabulky();
-    const polozky = p.polozky.length ? p.polozky : [{ nazov: 'Bez položiek', mnozstvo: '', jednotka: '', cena: '' }];
+    // Skupiny podľa cenníka (Cenník, Cena práce, vlastné kategórie) – pri viacerých sa ukážu oddelene s medzisúčtom
+    const sumySkupin = new Map();
+    p.polozky.forEach((x) => {
+      const k = x.skupina || 'Ostatné';
+      sumySkupin.set(k, r2((sumySkupin.get(k) || 0) + r2(num(x.mnozstvo) * num(x.cena))));
+    });
+    const viacSkupin = sumySkupin.size > 1;
+    const zoradene = viacSkupin
+      ? [...sumySkupin.keys()].flatMap((k) => p.polozky.filter((x) => (x.skupina || 'Ostatné') === k))
+      : p.polozky;
+    const polozky = zoradene.length ? zoradene : [{ nazov: 'Bez položiek', mnozstvo: '', jednotka: '', cena: '' }];
+    const riadokSkupiny = (k) => {
+      if (y - 40 < DOLE + 20) { pokracovanie(); hlavickaTabulky(); }
+      y -= 18;
+      st.page.drawRectangle({ x: OKRAJ, y: y - 5, width: PRAVY - OKRAJ, height: 17, color: PODKLAD });
+      napis(k, S.popis, y, { pis: B, size: 9.5 });
+      y -= 5;
+    };
+    const riadokMedzisuctu = (k) => {
+      if (y - 20 < DOLE) { pokracovanie(); hlavickaTabulky(); }
+      y -= 14;
+      napis(`Spolu ${k}`, S.cenaP, y, { pis: B, size: 9, farba: SEDA, zarovnaj: 'vpravo' });
+      napis(eur.format(sumySkupin.get(k)), S.spoluP - 4, y, { pis: B, size: 9.5, zarovnaj: 'vpravo' });
+      y -= 6;
+      ciara(OKRAJ, y, PRAVY, y, 0.6, SEDA);
+    };
+    let posledna = null;
     polozky.forEach((x, i) => {
+      const skupina = x.skupina || 'Ostatné';
+      if (viacSkupin && skupina !== posledna) {
+        if (posledna !== null) riadokMedzisuctu(posledna);
+        riadokSkupiny(skupina);
+        posledna = skupina;
+      }
       const riadky = zalom(x.nazov, R, 9.5, popisMax);
       const vyska = riadky.length * 12 + 9;
       if (y - vyska < DOLE + 20) { pokracovanie(); hlavickaTabulky(); }
@@ -279,10 +311,12 @@
       y -= vyska;
       ciara(OKRAJ, y, PRAVY, y, 0.4);
     });
+    if (viacSkupin && posledna !== null) riadokMedzisuctu(posledna);
 
     // Súčty
     const s = spocitaj(p);
-    const riadkySum = [['Medzisúčet', eur.format(s.medzisucet)]];
+    const riadkySum = viacSkupin ? [...sumySkupin].map(([k, v]) => [k, eur.format(v)]) : [];
+    riadkySum.push(['Medzisúčet', eur.format(s.medzisucet)]);
     if (s.zlava) riadkySum.push([`Zľava ${cislo.format(num(p.zlava))} %`, `−${eur.format(s.zlava)}`]);
     if (p.platcaDph) {
       riadkySum.push(['Základ dane', eur.format(s.zaklad)]);

@@ -570,6 +570,7 @@
   async function nacitajNastavenia() {
     try {
       stav.nastavenia = await api('/api/settings');
+      vykresliPodmenu();
       vykresliCennik();
       vyplnFirmu();
     } catch (e) {
@@ -581,10 +582,83 @@
     stav.nastavenia = await api('/api/settings', { method: 'PUT', body: stav.nastavenia });
   }
 
-  // Cenník
-  function skupinyCennika() {
+  // ---------- Cenníky: Cenník, Cena práce a vlastné kategórie ----------
+  const ZAKLADNE_ZOZNAMY = ['cennik', 'praca'];
+  stav.zoznam = 'cennik';
+  const zoznamy = () => stav.nastavenia?.cenniky || [];
+  const aktualnyZoznam = () => zoznamy().find((z) => z.id === stav.zoznam) || zoznamy()[0];
+  const IKONY_ZOZNAMOV = {
+    cennik: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>',
+    praca: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6zM11 7l-8 8 3 3 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    vlastny: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  };
+
+  function vykresliPodmenu() {
+    const nav = $('[data-podmenu]');
+    nav.replaceChildren();
+    for (const z of zoznamy()) {
+      const a = document.createElement('a');
+      a.href = '#cennik';
+      a.dataset.zoznam = z.id;
+      a.innerHTML = `${IKONY_ZOZNAMOV[z.id] || IKONY_ZOZNAMOV.vlastny}<span></span>`;
+      $('span', a).textContent = z.nazov;
+      a.addEventListener('click', (e) => {
+        stav.zoznam = z.id;
+        vykresliCennik();
+        if (location.hash === '#cennik') { e.preventDefault(); ukazKartu(); }
+      });
+      nav.append(a);
+    }
+    const nova = document.createElement('button');
+    nova.type = 'button';
+    nova.className = 'podmenu__nova';
+    nova.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Nová kategória';
+    nova.addEventListener('click', otvorNovuKategoriu);
+    nav.append(nova);
+    const firma = document.createElement('a');
+    firma.href = '#firma';
+    firma.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2"/></svg>Údaje na ponuke';
+    nav.append(firma);
+  }
+
+  // Nová kategória (vlastný zoznam)
+  const dialogKat = $('[data-nova-kat]');
+  function otvorNovuKategoriu() {
+    if (!stav.nastavenia) { oznam('Nastavenia sa ešte načítavajú, skúste to o chvíľu.', true); return; }
+    if (stav.cennikZmeneny && !confirm('V cenníku máte neuložené zmeny. Uložia sa spolu s novou kategóriou. Pokračovať?')) return;
+    $('#nova-kat-nazov').value = '';
+    dialogKat.showModal();
+    $('#nova-kat-nazov').focus();
+  }
+  $('[data-nova-kat-zrusit]').addEventListener('click', () => dialogKat.close());
+  $('[data-nova-kat-form]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nazov = $('#nova-kat-nazov').value.trim();
+    if (!nazov) { $('#nova-kat-nazov').focus(); return; }
+    if (zoznamy().some((z) => z.nazov.toLowerCase() === nazov.toLowerCase())) {
+      oznam('Kategória s takým názvom už existuje.', true);
+      return;
+    }
+    const id = `k-${Date.now().toString(36)}`;
+    stav.nastavenia.cenniky.push({ id, nazov, polozky: [] });
+    try {
+      await ulozNastavenia();
+      stav.cennikZmeneny = false;
+      dialogKat.close();
+      stav.zoznam = id;
+      vykresliPodmenu();
+      vykresliCennik();
+      location.hash = 'cennik';
+      oznam(`Kategória ${nazov} je vytvorená. Pridajte do nej položky.`);
+    } catch (err) {
+      stav.nastavenia.cenniky = stav.nastavenia.cenniky.filter((z) => z.id !== id);
+      oznam(err.message, true);
+    }
+  });
+
+  function skupinyCennika(polozky) {
     const skupiny = new Map();
-    stav.nastavenia.cennik.forEach((p, i) => {
+    polozky.forEach((p, i) => {
       if (!skupiny.has(p.kategoria)) skupiny.set(p.kategoria, []);
       skupiny.get(p.kategoria).push(i);
     });
@@ -597,15 +671,26 @@
   };
 
   function vykresliCennik() {
+    const z = aktualnyZoznam();
+    if (!z) return;
+    stav.zoznam = z.id;
+    $('[data-zoznam-nazov]').textContent = z.nazov;
+    $('[data-zmazat-zoznam]').hidden = ZAKLADNE_ZOZNAMY.includes(z.id);
+    $('[data-zoznam-napoveda]').textContent = z.id === 'praca'
+      ? 'Ceny práce bez DPH, napríklad hodinové sadzby alebo práca za m². V ponuke sa spočítajú zvlášť od cenníka.'
+      : z.id === 'cennik'
+        ? 'Tu si nastavíte položky a ceny bez DPH. Pri tvorbe ponuky ich vyberiete jedným ťuknutím a cenu môžete v ponuke ešte zmeniť.'
+        : `Vlastná kategória. Položky a ceny bez DPH, v ponuke sa spočítajú zvlášť pod názvom ${z.nazov}.`;
+    $$('[data-podmenu] a[data-zoznam]').forEach((a) => a.classList.toggle('aktivny', a.dataset.zoznam === z.id));
     const box = $('[data-cennik]');
     box.replaceChildren();
-    for (const [kat, indexy] of skupinyCennika()) {
+    for (const [kat, indexy] of skupinyCennika(z.polozky)) {
       const sek = document.createElement('section');
       sek.className = 'cennik-skupina';
-      sek.innerHTML = `<h2></h2>`;
+      sek.innerHTML = '<h2></h2>';
       $('h2', sek).textContent = kat;
       for (const i of indexy) {
-        const p = stav.nastavenia.cennik[i];
+        const p = z.polozky[i];
         const r = document.createElement('div');
         r.className = 'cennik-riadok';
         r.dataset.i = i;
@@ -624,14 +709,25 @@
       sek.append(pridat);
       box.append(sek);
     }
-    if (!stav.nastavenia.cennik.length) box.innerHTML = '<p class="prazdne-admin">Cenník je prázdny. Pridajte prvú kategóriu nižšie.</p>';
+    if (!z.polozky.length) {
+      const prazdny = document.createElement('div');
+      prazdny.className = 'prazdne-admin';
+      prazdny.innerHTML = '<p>Zoznam je zatiaľ prázdny.</p>';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tlacidlo tlacidlo--male';
+      b.textContent = 'Pridať prvú položku';
+      b.addEventListener('click', () => pridajDoCennika(z.id === 'praca' ? 'Práca' : z.nazov));
+      prazdny.append(b);
+      box.append(prazdny);
+    }
   }
 
   function pridajDoCennika(kat) {
-    const c = stav.nastavenia.cennik;
+    const c = aktualnyZoznam().polozky;
     let kam = c.length;
     for (let i = c.length - 1; i >= 0; i -= 1) if (c[i].kategoria === kat) { kam = i + 1; break; }
-    c.splice(kam, 0, { kategoria: kat, nazov: '', jednotka: 'm²', cena: 0 });
+    c.splice(kam, 0, { kategoria: kat, nazov: '', jednotka: aktualnyZoznam().id === 'praca' ? 'hod' : 'm²', cena: 0 });
     stav.cennikZmeneny = true;
     vykresliCennik();
     $(`.cennik-riadok[data-i="${kam}"] input`)?.focus();
@@ -640,7 +736,7 @@
   $('[data-cennik]').addEventListener('input', (e) => {
     const r = e.target.closest('.cennik-riadok');
     if (!r) return;
-    const p = stav.nastavenia.cennik[Number(r.dataset.i)];
+    const p = aktualnyZoznam().polozky[Number(r.dataset.i)];
     const pole = e.target.dataset.pole;
     if (pole === 'cena') {
       p.cena = num(e.target.value);
@@ -653,7 +749,7 @@
   $('[data-cennik]').addEventListener('click', (e) => {
     const btn = e.target.closest('.cennik-riadok button');
     if (!btn) return;
-    stav.nastavenia.cennik.splice(Number(btn.closest('.cennik-riadok').dataset.i), 1);
+    aktualnyZoznam().polozky.splice(Number(btn.closest('.cennik-riadok').dataset.i), 1);
     stav.cennikZmeneny = true;
     vykresliCennik();
   });
@@ -673,14 +769,51 @@
     try {
       await ulozNastavenia();
       stav.cennikZmeneny = false;
+      vykresliPodmenu();
       vykresliCennik();
-      oznam('Cenník uložený');
+      oznam(`${aktualnyZoznam().nazov}: uložené`);
     } catch (err) {
       oznam(err.message, true);
     } finally {
       btn.disabled = false;
     }
   });
+  $('[data-premenovat-zoznam]').addEventListener('click', async () => {
+    const z = aktualnyZoznam();
+    const nazov = (prompt('Nový názov', z.nazov) || '').trim();
+    if (!nazov || nazov === z.nazov) return;
+    const stary = z.nazov;
+    z.nazov = nazov.slice(0, 60);
+    try {
+      await ulozNastavenia();
+      stav.cennikZmeneny = false;
+      vykresliPodmenu();
+      vykresliCennik();
+      oznam('Názov je zmenený');
+    } catch (err) {
+      z.nazov = stary;
+      oznam(err.message, true);
+    }
+  });
+  const btnZmazatZoznam = $('[data-zmazat-zoznam]');
+  btnZmazatZoznam.addEventListener('click', () => dvojklik(btnZmazatZoznam, 'Naozaj zmazať aj s položkami?', async () => {
+    const z = aktualnyZoznam();
+    if (ZAKLADNE_ZOZNAMY.includes(z.id)) return;
+    const zaloha = stav.nastavenia.cenniky;
+    stav.nastavenia.cenniky = zaloha.filter((x) => x.id !== z.id);
+    try {
+      await ulozNastavenia();
+      stav.cennikZmeneny = false;
+      stav.zoznam = 'cennik';
+      vykresliPodmenu();
+      vykresliCennik();
+      location.hash = 'ponuky';
+      oznam(`Kategória ${z.nazov} je zmazaná`);
+    } catch (err) {
+      stav.nastavenia.cenniky = zaloha;
+      oznam(err.message, true);
+    }
+  }));
 
   // Firma
   const formFirma = $('[data-firma]');
@@ -823,6 +956,7 @@
       const li = document.createElement('li');
       li.dataset.i = i;
       li.innerHTML = `
+        ${x.skupina ? `<span class="polozka-skupina">${esc(x.skupina)}</span>` : ''}
         <label class="nazov"><span>Popis</span><input data-pole="nazov" value="${esc(x.nazov)}" placeholder="Popis práce alebo materiálu"></label>
         <label><span>Množstvo</span><input data-pole="mnozstvo" inputmode="decimal" value="${esc(vstup(x.mnozstvo))}"></label>
         <label><span>MJ</span><input data-pole="jednotka" list="jednotky" value="${esc(x.jednotka)}"></label>
@@ -843,8 +977,21 @@
     return { medzisucet, zlava, zaklad, dph, spolu: r2(zaklad + dph) };
   }
 
+  // Medzisúčty podľa kategórie (Cenník, Cena práce, vlastné), ak ich je v ponuke viac
+  function sumyPodlaSkupin(p) {
+    const m = new Map();
+    p.polozky.forEach((x) => {
+      const k = x.skupina || 'Ostatné';
+      m.set(k, r2((m.get(k) || 0) + r2(num(x.mnozstvo) * num(x.cena))));
+    });
+    return m;
+  }
+
   function suctyHtml(p, s) {
-    let h = `<dt>Medzisúčet</dt><dd>${eur.format(s.medzisucet)}</dd>`;
+    let h = '';
+    const skupiny = sumyPodlaSkupin(p);
+    if (skupiny.size > 1) for (const [k, v] of skupiny) h += `<dt>${esc(k)}</dt><dd>${eur.format(v)}</dd>`;
+    h += `<dt class="${skupiny.size > 1 ? 'medzisucet' : ''}">Medzisúčet</dt><dd class="${skupiny.size > 1 ? 'medzisucet' : ''}">${eur.format(s.medzisucet)}</dd>`;
     if (s.zlava) h += `<dt>Zľava ${cislo.format(num(p.zlava))} %</dt><dd>−${eur.format(s.zlava)}</dd>`;
     if (p.platcaDph) {
       h += `<dt>Základ dane</dt><dd>${eur.format(s.zaklad)}</dd><dt>DPH ${cislo.format(num(p.sadzbaDph))} %</dt><dd>${eur.format(s.dph)}</dd>`;
@@ -942,49 +1089,70 @@
     $('[data-polozky] li:last-child input').focus();
   });
 
-  // Výber z cenníka
+  // Výber položiek z cenníkov (karty: Cenník, Cena práce, vlastné kategórie)
   const vyber = $('[data-vyber]');
   let pridaneVyberom = 0;
+  let vyberZoznam = 'cennik';
   function vykresliVyber() {
     const hladat = $('[data-vyber-hladat]').value.trim().toLowerCase();
+    const karty = $('[data-vyber-karty]');
+    karty.replaceChildren();
+    zoznamy().forEach((z) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = z.nazov;
+      b.setAttribute('aria-pressed', String(!hladat && z.id === vyberZoznam));
+      b.addEventListener('click', () => {
+        vyberZoznam = z.id;
+        $('[data-vyber-hladat]').value = '';
+        vykresliVyber();
+      });
+      karty.append(b);
+    });
     const box = $('[data-vyber-zoznam]');
     box.replaceChildren();
-    const cennik = stav.nastavenia?.cennik || [];
-    const skupiny = new Map();
-    cennik.forEach((p) => {
-      if (hladat && !`${p.nazov} ${p.kategoria}`.toLowerCase().includes(hladat)) return;
-      if (!skupiny.has(p.kategoria)) skupiny.set(p.kategoria, []);
-      skupiny.get(p.kategoria).push(p);
-    });
-    if (!skupiny.size) {
-      box.innerHTML = `<p class="prazdne-admin">${cennik.length ? 'Nič sa nenašlo.' : 'Cenník je prázdny. Položky si nastavíte v záložke Cenník.'}</p>`;
-      return;
-    }
-    for (const [kat, polozky] of skupiny) {
-      const h = document.createElement('h3');
-      h.textContent = kat;
-      box.append(h);
-      for (const p of polozky) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.innerHTML = `<span class="n">${esc(p.nazov)}</span><span class="cena${p.cena ? '' : ' nula'}">${p.cena ? `${eur.format(p.cena)} / ${esc(p.jednotka)}` : `bez ceny / ${esc(p.jednotka)}`}</span>`;
-        b.addEventListener('click', () => {
-          stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: predvoleneMnozstvo(p), cena: p.cena });
-          stav.ponukaZmenena = true;
-          pridaneVyberom += 1;
-          vykresliPolozky();
-          const n = $('.n', b);
-          n.classList.add('pridane');
-          n.textContent = `Pridané: ${p.nazov}`;
-          setTimeout(() => { n.classList.remove('pridane'); n.textContent = p.nazov; }, 1200);
-        });
-        box.append(b);
+    // Pri hľadaní prehľadá všetky cenníky, inak ukáže vybraný
+    const zdroje = hladat ? zoznamy() : zoznamy().filter((z) => z.id === vyberZoznam);
+    let pocet = 0;
+    for (const z of zdroje) {
+      const skupiny = new Map();
+      z.polozky.forEach((p) => {
+        if (hladat && !`${p.nazov} ${p.kategoria} ${z.nazov}`.toLowerCase().includes(hladat)) return;
+        if (!skupiny.has(p.kategoria)) skupiny.set(p.kategoria, []);
+        skupiny.get(p.kategoria).push(p);
+      });
+      for (const [kat, polozky] of skupiny) {
+        const h = document.createElement('h3');
+        h.textContent = hladat ? `${z.nazov}: ${kat}` : kat;
+        box.append(h);
+        for (const p of polozky) {
+          pocet += 1;
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.innerHTML = `<span class="n">${esc(p.nazov)}</span><span class="cena${p.cena ? '' : ' nula'}">${p.cena ? `${eur.format(p.cena)} / ${esc(p.jednotka)}` : `bez ceny / ${esc(p.jednotka)}`}</span>`;
+          b.addEventListener('click', () => {
+            stav.ponuka.polozky.push({ nazov: p.nazov, jednotka: p.jednotka, mnozstvo: predvoleneMnozstvo(p), cena: p.cena, skupina: z.nazov });
+            stav.ponukaZmenena = true;
+            pridaneVyberom += 1;
+            vykresliPolozky();
+            const n = $('.n', b);
+            n.classList.add('pridane');
+            n.textContent = `Pridané: ${p.nazov}`;
+            setTimeout(() => { n.classList.remove('pridane'); n.textContent = p.nazov; }, 1200);
+          });
+          box.append(b);
+        }
       }
+    }
+    if (!pocet) {
+      const prazdny = hladat ? 'Nič sa nenašlo.' : 'Tento zoznam je prázdny. Položky si nastavíte v Ponukách cez tlačidlo s jeho názvom.';
+      box.innerHTML = `<p class="prazdne-admin">${prazdny}</p>`;
     }
   }
   $('[data-z-cennika]').addEventListener('click', () => {
     pridaneVyberom = 0;
     $('[data-vyber-hladat]').value = '';
+    if (!zoznamy().some((z) => z.id === vyberZoznam)) vyberZoznam = 'cennik';
     vykresliVyber();
     vyber.showModal();
   });
@@ -1074,8 +1242,25 @@
     ].filter(Boolean).map(esc).join('<br>');
     const z = p.zakaznik || {};
     const riadkyZak = [z.meno && `<strong>${esc(z.meno)}</strong>`, esc(z.adresa), z.telefon && `Tel.: ${esc(z.telefon)}`, esc(z.email)].filter(Boolean).join('<br>');
-    const polozky = p.polozky.map((x, i) => `<tr><td>${i + 1}.</td><td>${esc(x.nazov)}</td><td class="c">${cislo.format(num(x.mnozstvo))}</td><td>${esc(x.jednotka)}</td><td class="c">${eur.format(num(x.cena))}</td><td class="c">${eur.format(r2(num(x.mnozstvo) * num(x.cena)))}</td></tr>`).join('');
-    let sucty = `<tr><td>Medzisúčet</td><td class="c">${eur.format(s.medzisucet)}</td></tr>`;
+    const skupiny = sumyPodlaSkupin(p);
+    const viac = skupiny.size > 1;
+    const poradie = viac ? [...skupiny.keys()].flatMap((k) => p.polozky.filter((x) => (x.skupina || 'Ostatné') === k)) : p.polozky;
+    let cislovanie = 0;
+    let polozky = '';
+    let posledna = null;
+    poradie.forEach((x) => {
+      const k = x.skupina || 'Ostatné';
+      if (viac && k !== posledna) {
+        if (posledna !== null) polozky += `<tr class="t-medzisucet"><td></td><td colspan="4">Spolu ${esc(posledna)}</td><td class="c">${eur.format(skupiny.get(posledna))}</td></tr>`;
+        polozky += `<tr class="t-skupina"><td colspan="6">${esc(k)}</td></tr>`;
+        posledna = k;
+      }
+      cislovanie += 1;
+      polozky += `<tr><td>${cislovanie}.</td><td>${esc(x.nazov)}</td><td class="c">${cislo.format(num(x.mnozstvo))}</td><td>${esc(x.jednotka)}</td><td class="c">${eur.format(num(x.cena))}</td><td class="c">${eur.format(r2(num(x.mnozstvo) * num(x.cena)))}</td></tr>`;
+    });
+    if (viac && posledna !== null) polozky += `<tr class="t-medzisucet"><td></td><td colspan="4">Spolu ${esc(posledna)}</td><td class="c">${eur.format(skupiny.get(posledna))}</td></tr>`;
+    let sucty = viac ? [...skupiny].map(([k, v]) => `<tr><td>${esc(k)}</td><td class="c">${eur.format(v)}</td></tr>`).join('') : '';
+    sucty += `<tr><td>Medzisúčet</td><td class="c">${eur.format(s.medzisucet)}</td></tr>`;
     if (s.zlava) sucty += `<tr><td>Zľava ${cislo.format(num(p.zlava))} %</td><td class="c">−${eur.format(s.zlava)}</td></tr>`;
     if (p.platcaDph) sucty += `<tr><td>Základ dane</td><td class="c">${eur.format(s.zaklad)}</td></tr><tr><td>DPH ${cislo.format(num(p.sadzbaDph))} %</td><td class="c">${eur.format(s.dph)}</td></tr>`;
     sucty += `<tr class="spolu"><td>${p.platcaDph ? 'Spolu s DPH' : 'Spolu'}</td><td class="c">${eur.format(s.spolu)}</td></tr>`;

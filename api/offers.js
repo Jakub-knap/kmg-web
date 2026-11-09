@@ -48,7 +48,7 @@ function clean(input, id) {
     predmet: text(input?.predmet, 300),
     polozky: (Array.isArray(input?.polozky) ? input.polozky : [])
       .slice(0, 300)
-      .map((x) => ({ nazov: text(x.nazov, 300), jednotka: text(x.jednotka, 20) || 'ks', mnozstvo: num(x.mnozstvo), cena: num(x.cena) }))
+      .map((x) => ({ nazov: text(x.nazov, 300), jednotka: text(x.jednotka, 20) || 'ks', mnozstvo: num(x.mnozstvo), cena: num(x.cena), skupina: text(x.skupina, 60) }))
       .filter((x) => x.nazov),
     zlava: Math.min(100, Math.max(0, num(input?.zlava))),
     platcaDph: Boolean(input?.platcaDph),

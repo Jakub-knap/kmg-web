@@ -104,10 +104,7 @@
             <h1>Cenové ponuky</h1>
             <button type="button" class="tlacidlo" data-nova-ponuka>Nová ponuka</button>
           </div>
-          <nav class="podmenu" aria-label="Nastavenia ponúk">
-            <a href="#cennik"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>Cenník</a>
-            <a href="#firma"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2"/></svg>Údaje na ponuke</a>
-          </nav>
+          <nav class="podmenu" aria-label="Cenníky a nastavenia ponúk" data-podmenu></nav>
           <input type="search" class="hladat" placeholder="Hľadať podľa zákazníka, čísla alebo predmetu" aria-label="Hľadať ponuku" data-hladat-ponuku>
           <ul class="zoznam-ponuk" data-zoznam-ponuk></ul>
         </div>
@@ -197,17 +194,23 @@
         </form>
       </main>
 
-      <!-- CENNÍK -->
+      <!-- CENNÍKY (Cenník, Cena práce, vlastné kategórie) -->
       <main class="obal panel" data-panel="cennik" hidden>
         <a class="spat" href="#ponuky">Späť na ponuky</a>
-        <h1>Cenník</h1>
-        <p class="napoveda">Tu si nastavíte vlastné položky a ceny bez DPH. Pri tvorbe ponuky ich vyberiete jedným ťuknutím a cenu môžete v ponuke ešte zmeniť.</p>
+        <div class="riadok-nadpis">
+          <h1 data-zoznam-nazov>Cenník</h1>
+          <div class="zoznam-akcie">
+            <button type="button" class="tlacidlo tlacidlo--obrys tlacidlo--male" data-premenovat-zoznam>Premenovať</button>
+            <button type="button" class="tlacidlo tlacidlo--zmazat tlacidlo--male" data-zmazat-zoznam hidden>Zmazať kategóriu</button>
+          </div>
+        </div>
+        <p class="napoveda" data-zoznam-napoveda>Tu si nastavíte vlastné položky a ceny bez DPH. Pri tvorbe ponuky ich vyberiete jedným ťuknutím a cenu môžete v ponuke ešte zmeniť.</p>
         <div data-cennik></div>
         <div class="nova-kategoria">
-          <label for="nova-kat">Nová kategória</label>
+          <label for="nova-kat">Nová skupina položiek v tomto zozname</label>
           <div class="riadok-vstup"><input id="nova-kat" placeholder="napr. Klampiarske práce" data-nova-kategoria><button type="button" class="tlacidlo tlacidlo--obrys" data-pridat-kategoriu>Pridať</button></div>
         </div>
-        <div class="lista-akcii"><button type="button" class="tlacidlo" data-ulozit-cennik>Uložiť cenník</button></div>
+        <div class="lista-akcii"><button type="button" class="tlacidlo" data-ulozit-cennik>Uložiť</button></div>
       </main>
 
       <!-- FIRMA -->
@@ -240,9 +243,10 @@
   <!-- Výber z cenníka -->
   <dialog class="vyber" data-vyber aria-labelledby="vyber-nadpis">
     <div class="vyber__hore">
-      <h2 id="vyber-nadpis">Pridať z cenníka</h2>
+      <h2 id="vyber-nadpis">Pridať položky</h2>
       <button type="button" class="tlacidlo tlacidlo--male" data-vyber-hotovo>Hotovo</button>
     </div>
+    <div class="vyber__karty" role="group" aria-label="Vybrať cenník" data-vyber-karty></div>
     <input type="search" class="hladat" placeholder="Hľadať položku" aria-label="Hľadať položku" data-vyber-hladat>
     <div class="vyber__zoznam" data-vyber-zoznam></div>
   </dialog>
@@ -252,6 +256,19 @@
     <h2 id="navod-nadpis">Pridajte si aplikáciu na plochu</h2>
     <ol data-navod-kroky></ol>
     <button type="button" class="tlacidlo" data-navod-zavriet>Rozumiem</button>
+  </dialog>
+
+  <dialog class="navod nova-kat-dialog" data-nova-kat aria-labelledby="nova-kat-nadpis">
+    <form method="dialog" data-nova-kat-form novalidate>
+      <h2 id="nova-kat-nadpis">Nová kategória</h2>
+      <p class="napoveda">Vlastný zoznam položiek s cenami, napríklad Materiál, Doprava alebo Lešenie. Zobrazí sa ako tlačidlo vedľa Cenníka a Ceny práce.</p>
+      <label for="nova-kat-nazov">Názov kategórie</label>
+      <input id="nova-kat-nazov" name="nazov" maxlength="60" placeholder="napr. Materiál" autocomplete="off">
+      <div class="akcie">
+        <button type="submit" class="tlacidlo" value="ok">Vytvoriť</button>
+        <button type="button" class="tlacidlo tlacidlo--obrys" data-nova-kat-zrusit>Zrušiť</button>
+      </div>
+    </form>
   </dialog>
 
   <div class="oznam" role="status" aria-live="polite" data-oznam></div>

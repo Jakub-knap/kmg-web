@@ -20,7 +20,7 @@ const ATIKY = [
   { nazov: 'Demontáž starého oplechovania atiky', jednotka: 'bm' },
   { nazov: 'Rohy a ukončenia atiky', jednotka: 'ks' },
 ];
-const MIGRACIE = ['plechy', 'atiky'];
+const MIGRACIE = ['plechy', 'atiky', 'cenniky'];
 
 function doplnAtiky(cennik) {
   if (cennik.some((p) => /atik/i.test(String(p.nazov)))) return cennik;
@@ -58,6 +58,37 @@ function num(v, def = 0) {
   return Number.isFinite(n) ? n : def;
 }
 
+const ZAKLADNE = [{ id: 'cennik', nazov: 'Cenník' }, { id: 'praca', nazov: 'Cena práce' }];
+const ZOZNAM_ID = /^[a-z0-9-]{1,40}$/;
+
+function cistiPolozky(arr) {
+  return (Array.isArray(arr) ? arr : [])
+    .slice(0, 500)
+    .map((p) => ({ kategoria: text(p.kategoria, 60) || 'Ostatné', nazov: text(p.nazov, 200), jednotka: text(p.jednotka, 20) || 'ks', cena: Math.max(0, num(p.cena)) }))
+    .filter((p) => p.nazov);
+}
+
+/** Cenníky z uložených dát (aj zo starého formátu s jedným „cennik“), so zaručenými základnými zoznamami. */
+function zostavCenniky(input, { doplnPracu = false } = {}) {
+  let zoznamy = Array.isArray(input?.cenniky)
+    ? input.cenniky
+    : [{ id: 'cennik', nazov: 'Cenník', polozky: Array.isArray(input?.cennik) ? input.cennik : [] }];
+  const videne = new Set();
+  zoznamy = zoznamy.slice(0, 30).map((z, i) => {
+    let id = ZOZNAM_ID.test(z?.id) ? z.id : `k-${i}-${Date.now().toString(36)}`;
+    while (videne.has(id)) id = `${id}-x`;
+    videne.add(id);
+    return { id, nazov: text(z?.nazov, 60) || 'Kategória', polozky: cistiPolozky(z?.polozky) };
+  });
+  ZAKLADNE.forEach((zak, poradie) => {
+    if (zoznamy.some((z) => z.id === zak.id)) return;
+    const predvolene = DEFAULT_SETTINGS.cenniky.find((z) => z.id === zak.id);
+    const polozky = doplnPracu ? structuredClone(predvolene.polozky) : [];
+    zoznamy.splice(Math.min(poradie, zoznamy.length), 0, { ...zak, polozky });
+  });
+  return zoznamy;
+}
+
 export function clean(input) {
   const f = input?.firma || {};
   const firma = {};
@@ -66,14 +97,11 @@ export function clean(input) {
     else if (k === 'sadzbaDph' || k === 'platnostDni') firma[k] = Math.max(0, num(f[k], DEFAULT_SETTINGS.firma[k]));
     else firma[k] = text(f[k], k === 'pata' ? 1000 : 300);
   }
-  const cennik = (Array.isArray(input?.cennik) ? input.cennik : [])
-    .slice(0, 500)
-    .map((p) => ({ kategoria: text(p.kategoria, 60) || 'Ostatné', nazov: text(p.nazov, 200), jednotka: text(p.jednotka, 20) || 'ks', cena: Math.max(0, num(p.cena)) }))
-    .filter((p) => p.nazov);
+  const cenniky = zostavCenniky(input);
   const max = Math.round(num(input?.galeria?.maxZakaziek, DEFAULT_SETTINGS.galeria.maxZakaziek));
   const galeria = { maxZakaziek: Math.min(50, Math.max(1, max)) };
   const migracie = (Array.isArray(input?.migracie) ? input.migracie : []).filter((m) => MIGRACIE.includes(m));
-  return { firma, cennik, galeria, migracie };
+  return { firma, cenniky, galeria, migracie };
 }
 
 export async function loadSettings() {
@@ -81,20 +109,22 @@ export async function loadSettings() {
   if (!blob) return { ...structuredClone(DEFAULT_SETTINGS), migracie: [...MIGRACIE] };
   const data = await readJson(blob);
   const migracie = Array.isArray(data.migracie) ? [...data.migracie] : [];
-  let cennik = Array.isArray(data.cennik) ? data.cennik : [];
+  // Cena práce sa so vzorovými položkami doplní len raz (pri prechode zo starého formátu).
+  const cenniky = zostavCenniky(data, { doplnPracu: !migracie.includes('cenniky') });
+  const hlavny = cenniky.find((z) => z.id === 'cennik');
   if (!migracie.includes('plechy')) {
-    cennik = doplnPlechy(cennik);
+    hlavny.polozky = doplnPlechy(hlavny.polozky);
     migracie.push('plechy');
   }
   if (!migracie.includes('atiky')) {
-    cennik = doplnAtiky(cennik);
+    hlavny.polozky = doplnAtiky(hlavny.polozky);
     migracie.push('atiky');
   }
+  if (!migracie.includes('cenniky')) migracie.push('cenniky');
   return {
     firma: { ...DEFAULT_SETTINGS.firma, ...(data.firma || {}) },
-    cennik,
+    cenniky,
     galeria: { ...DEFAULT_SETTINGS.galeria, ...(data.galeria || {}) },
     migracie,
   };
 }
-

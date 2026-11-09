@@ -180,6 +180,34 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 }
 .podmenu a:hover { border-color: var(--grafit); }
 .podmenu svg { width: 1.1rem; height: 1.1rem; }
+.podmenu a.aktivny { border-color: var(--grafit); }
+.podmenu__nova {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 2.6rem; padding: .35rem .9rem; cursor: pointer;
+  background: transparent; border: 1.5px dashed var(--cervena); border-radius: 999px; color: var(--cervena-tmava);
+  font: 600 .95rem var(--f-text);
+}
+.podmenu__nova:hover { background: #fdf1f1; }
+.zoznam-akcie { display: flex; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+.nova-kat-dialog form { display: grid; gap: .5rem; text-align: left; }
+.nova-kat-dialog .akcie { display: flex; gap: .5rem; margin-top: .75rem; }
+.nova-kat-dialog .akcie .tlacidlo { flex: 1; }
+.vyber__karty { display: flex; gap: .4rem; overflow-x: auto; padding: .75rem 1rem 0; scrollbar-width: none; }
+.vyber__karty::-webkit-scrollbar { display: none; }
+.vyber__karty button {
+  flex: none; min-height: 2.5rem; padding: .3rem .95rem; border-radius: 999px; cursor: pointer;
+  border: 1.5px solid #c9c7c1; background: var(--biela); color: var(--grafit); font: 500 .92rem var(--f-text);
+}
+.vyber__karty button[aria-pressed='true'] { background: var(--grafit); color: var(--biela); border-color: var(--grafit); }
+.polozka-skupina {
+  grid-column: 1 / -1; justify-self: start; font-size: .75rem; font-weight: 600; color: var(--bridlica);
+  background: var(--kamen); border-radius: 999px; padding: .1rem .55rem;
+}
+@media (min-width: 56rem) { .polozky li:has(.polozka-skupina) { grid-template-rows: auto auto; } }
+.sucty .medzisucet { border-top: 1px solid var(--linka); padding-top: .35rem; margin-top: .2rem; }
+.prazdne-admin .tlacidlo { margin-top: .75rem; }
+#tlac .t-skupina td { font-weight: 700; background: #f3f2ef; padding-top: 2.5mm; }
+#tlac .t-medzisucet td { font-weight: 600; text-align: right; border-bottom: 0.4mm solid #999; }
+#tlac .t-medzisucet td:nth-child(2) { text-align: right; }
 a.spat { display: inline-block; }
 .hladat { margin-bottom: 1rem; }
 .zoznam-ponuk { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
@@ -270,7 +298,7 @@ a.spat { display: inline-block; }
 .vyber[open] { display: flex; flex-direction: column; }
 .vyber__hore { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--biela); }
 .vyber__hore h2 { margin: 0; font-size: 1.5rem; }
-.vyber .hladat { margin: 0.75rem 1rem; width: auto; }
+.vyber .hladat { margin: 0.75rem 1rem; width: calc(100% - 2rem) !important; }
 .vyber__zoznam { overflow-y: auto; padding: 0 1rem 1rem; }
 .vyber__zoznam h3 { font-size: 0.95rem; color: var(--bridlica); margin: 1rem 0 0.4rem; }
 .vyber__zoznam button {
