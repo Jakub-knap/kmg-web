@@ -3,14 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Realizácie – KMG stav</title>
-  <meta name="description" content="Fotky striech, oplechovania atík, chát, prístreškov, altánkov, pergol a drevodomov, ktoré postavila firma KMG stav.">
+  <title>Realizácie – strechy, atiky, chaty a pergoly v Bardejove | KMG stav</title>
+  <meta name="description" content="Fotky striech, oplechovania atík, chát, prístreškov, altánkov, pergol a drevodomov, ktoré postavil KMG stav v Bardejove a okolí.">
+  <link rel="canonical" href="https://www.kmgstav.sk/galeria">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="sk_SK">
+  <meta property="og:site_name" content="KMG stav">
+  <meta property="og:title" content="Realizácie – KMG stav Bardejov">
+  <meta property="og:description" content="Fotky našich striech, atík, chát, prístreškov, altánkov, pergol a drevodomov.">
+  <meta property="og:url" content="https://www.kmgstav.sk/galeria">
+  <meta property="og:image" content="https://www.kmgstav.sk/assets/img/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#2f2e2c">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png">
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/assets/fonts/firasans-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="/assets/fonts/firasansextracondensed-extrabold.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body class="galeria-stranka">
@@ -20,7 +28,7 @@
       <nav class="menu" aria-label="Hlavné menu">
         <a href="/#sluzby">Čo robíme</a>
         <a href="/galeria" aria-current="page">Realizácie</a>
-        <a href="/#kontakt">Kontakt</a>
+        <a href="#kontakt">Kontakt</a>
         <a class="tlacidlo tlacidlo--male" href="tel:+421951259327">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>
           Zavolať
@@ -32,7 +40,7 @@
   <main>
     <div class="obal hlava">
       <h1>Realizácie</h1>
-      <p>Naše posledné zákazky. Ťuknite na zákazku a prezrite si všetky jej fotky.</p>
+      <p>Naše posledné zákazky v Bardejove a okolí. Ťuknite na zákazku a prezrite si všetky jej fotky.</p>
       <div class="filtre" role="group" aria-label="Vybrať druh stavby" data-filtre>
         <button type="button" aria-pressed="true" data-kategoria="">Všetko</button>
         <button type="button" aria-pressed="false" data-kategoria="strechy">Strechy</button>
@@ -50,7 +58,7 @@
         <p class="prazdne">Načítavam fotky…</p>
       </div>
     </div>
-    <section class="sekcia">
+    <section class="sekcia" id="kontakt">
       <div class="obal">
         <h2>Chcete niečo podobné?</h2>
         <div class="akcie">
@@ -61,15 +69,42 @@
     </section>
   </main>
 
+  <!-- PATA (generuje nastroje/stranky.py) -->
   <footer class="pata">
-    <div class="obal">
-      <div>
+    <div class="obal pata__mriezka">
+      <div class="pata__firma">
         <p><strong data-firma-nazov>KMG stav</strong></p>
+        <p>Strechy a stavby z dreva – Bardejov a okolie</p>
         <div class="pata__udaje" data-firma-udaje></div>
       </div>
-      <p>© <span data-rok>2026</span> KMG stav. <a href="/admin" rel="nofollow">Správa webu</a></p>
+      <nav class="pata__stlpec" aria-label="Služby">
+        <p><strong>Služby</strong></p>
+        <a href="/strechy-bardejov">Strechy</a>
+        <a href="/oplechovanie-atiky-bardejov">Atiky</a>
+        <a href="/drevodomy-bardejov">Drevodomy</a>
+        <a href="/chaty-bardejov">Chaty</a>
+        <a href="/pristresky-bardejov">Prístrešky</a>
+        <a href="/altanky-pergoly-bardejov">Altánky a pergoly</a>
+        <a href="/pivnice-interiery-bardejov">Pivnice a interiéry</a>
+        <a href="/galeria">Realizácie</a>
+      </nav>
+      <div class="pata__stlpec">
+        <p><strong>Kontakt</strong></p>
+        <a href="tel:+421951259327" data-tel="0" data-tel-cislo>0951 259 327</a>
+        <a href="tel:+421914138335" data-tel="1" data-tel-cislo>0914 138 335</a>
+        <a href="mailto:kmg.stav@gmail.com" data-email data-email-text>kmg.stav@gmail.com</a>
+      </div>
+    </div>
+    <div class="obal pata__spodok">
+      <p>© <span data-rok>2026</span> KMG stav</p>
+      <nav aria-label="Právne informácie">
+        <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+        <a href="/ochrana-osobnych-udajov#cookies">Cookies</a>
+        <a href="/admin" rel="nofollow">Správa webu</a>
+      </nav>
     </div>
   </footer>
+  <!-- /PATA -->
 
   <dialog class="lupa" aria-label="Zväčšená fotka">
     <div class="lupa__hore"><span data-lupa-pocet></span><button type="button" data-lupa-zavriet>Zavrieť</button></div>

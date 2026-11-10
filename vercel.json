@@ -5,6 +5,17 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "kmg-web.vercel.app"
+        }
+      ],
+      "destination": "https://www.kmgstav.sk/:path*",
+      "permanent": true
+    },
+    {
       "source": "/fotky",
       "destination": "/admin?tab=fotky",
       "permanent": false
@@ -16,6 +27,15 @@
     }
   ],
   "headers": [
+    {
+      "source": "/assets/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/sw.js",
       "headers": [

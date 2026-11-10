@@ -1,5 +1,13 @@
 /* KMG stav – verejný web
    Farby sú zo zástavy loga: grafit a červená na bielej. */
+
+/* Písma Fira Sans (SIL OFL 1.1, assets/fonts/OFL-FiraSans.txt) sú uložené priamo na webe –
+   návštevník sa nespája so servermi Googlu (GDPR). Podmnožina: latinka so slovenskou diakritikou. */
+@font-face { font-family: 'Fira Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/assets/fonts/firasans-regular.woff') format('woff'); }
+@font-face { font-family: 'Fira Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/assets/fonts/firasans-medium.woff') format('woff'); }
+@font-face { font-family: 'Fira Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/assets/fonts/firasans-semibold.woff') format('woff'); }
+@font-face { font-family: 'Fira Sans Extra Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url('/assets/fonts/firasansextracondensed-bold.woff') format('woff'); }
+@font-face { font-family: 'Fira Sans Extra Condensed'; font-style: normal; font-weight: 800; font-display: swap; src: url('/assets/fonts/firasansextracondensed-extrabold.woff') format('woff'); }
 :root {
   --grafit: #2f2e2c;
   --grafit-2: #3d3c39;
@@ -256,10 +264,21 @@ a { color: inherit; }
 .kontakt__dalsie p { margin: 0; }
 
 /* Päta */
-.pata { background: var(--grafit); color: #cfcdc8; font-size: 0.92rem; padding: 2.5rem 0; }
-.pata .obal { display: grid; gap: 1rem; }
-@media (min-width: 48rem) { .pata .obal { grid-template-columns: 1fr auto; align-items: end; } }
+.pata { background: var(--grafit); color: #cfcdc8; font-size: 0.92rem; padding: 3rem 0 1.5rem; }
 .pata p { margin: 0; }
+.pata__mriezka { display: grid; gap: 2rem; }
+@media (min-width: 48rem) { .pata__mriezka { grid-template-columns: 1.4fr 1fr 1fr; } }
+.pata__firma { display: grid; gap: .35rem; align-content: start; }
+.pata__stlpec { display: grid; gap: .45rem; align-content: start; justify-items: start; }
+.pata__stlpec p { margin-bottom: .2rem; }
+.pata__stlpec a { text-decoration: none; }
+.pata__stlpec a:hover, .pata__spodok a:hover { color: var(--biela); text-decoration: underline; }
+.pata__spodok {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem 1.5rem;
+  margin-top: 2.5rem; padding-top: 1.25rem; font-size: .85rem; position: relative;
+}
+.pata__spodok::before { content: ''; position: absolute; top: 0; left: var(--okraj); right: var(--okraj); border-top: 1px solid rgba(255, 255, 255, .14); }
+.pata__spodok nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; }
 .pata strong { color: var(--biela); }
 .pata a { color: #cfcdc8; }
 .pata__udaje { display: grid; gap: .15rem; margin-top: .25rem; }
@@ -267,3 +286,88 @@ a { color: inherit; }
 [data-tel][hidden] { display: none !important; }
 
 .skryte { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Stránky služieb (Strechy Bardejov a ďalšie) */
+.sluzba__uvod { background: var(--grafit); color: var(--biela); padding: 2.5rem 0 3.5rem; border-bottom: 6px solid var(--cervena); }
+@media (min-width: 60rem) { .sluzba__uvod { padding: 3.5rem 0 4.5rem; } }
+.omrvinky { display: flex; flex-wrap: wrap; gap: .4rem; font-size: .9rem; color: #bdbab4; margin-bottom: 1.5rem; }
+.omrvinky a { color: #bdbab4; }
+.omrvinky a:hover { color: var(--biela); }
+.sluzba__uvod h1 {
+  font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(2.9rem, 11vw, 5.5rem);
+  line-height: .95; margin: 0; letter-spacing: -.01em;
+}
+.sluzba__podnadpis { font-family: var(--f-nadpis); font-weight: 700; font-size: clamp(1.35rem, 4vw, 1.9rem); color: #f0a7a8; margin: .35rem 0 1.25rem; }
+.sluzba__lead { font-size: 1.15rem; line-height: 1.55; max-width: 38rem; margin: 0 0 2rem; color: #e7e5e1; }
+.tlacidlo--svetle { background: transparent; color: var(--biela); border-color: var(--biela); }
+.tlacidlo--svetle:hover { background: var(--biela); color: var(--grafit); }
+.sluzba__mriezka { display: grid; gap: 3rem; }
+@media (min-width: 60rem) { .sluzba__mriezka { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: start; } }
+.sluzba__text { max-width: 42rem; }
+.sluzba__text h2 { font-size: clamp(1.75rem, 5vw, 2.4rem); margin: 2.5rem 0 1rem; }
+.sluzba__text h2:first-child { margin-top: 0; }
+.sluzba__text p { line-height: 1.65; }
+.fajky { list-style: none; padding: 0; margin: 0; display: grid; gap: .65rem; }
+.fajky li { position: relative; padding-left: 2rem; line-height: 1.5; }
+.fajky li::before {
+  content: ''; position: absolute; left: .15rem; top: .3rem; width: .65rem; height: 1.05rem;
+  border: solid var(--cervena); border-width: 0 3px 3px 0; transform: rotate(45deg);
+}
+.krytiny { display: grid; gap: .75rem; margin: 0 0 1.25rem; }
+.krytiny div { border-left: 3px solid var(--cervena); padding: .15rem 0 .15rem 1rem; }
+.krytiny dt { font-weight: 600; }
+.krytiny dd { margin: .15rem 0 0; color: var(--bridlica); line-height: 1.5; }
+.sluzba-postup { background: var(--kamen); padding: 1.75rem; border-top: 4px solid var(--grafit); }
+@media (min-width: 60rem) { .sluzba-postup { position: sticky; top: 6rem; } }
+.sluzba-postup h2 { font-size: 1.8rem; margin: 0 0 1.25rem; }
+.sluzba-postup ol { margin: 0; padding: 0; list-style: none; counter-reset: krok; display: grid; gap: 1rem; }
+.sluzba-postup li { counter-increment: krok; display: grid; grid-template-columns: 2.25rem 1fr; gap: .75rem; line-height: 1.5; }
+.sluzba-postup li::before {
+  content: counter(krok); display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%;
+  background: var(--cervena); color: var(--biela); font: 800 1.1rem var(--f-nadpis);
+}
+.sluzba__viac { margin: 1.5rem 0 0; font-weight: 600; }
+.faq { display: grid; gap: .5rem; max-width: 48rem; }
+.faq details { background: var(--biela); border: 1px solid var(--linka); }
+.faq summary {
+  cursor: pointer; list-style: none; padding: 1rem 3rem 1rem 1.25rem; font-weight: 600; position: relative;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: ''; position: absolute; right: 1.25rem; top: 50%; width: .6rem; height: .6rem;
+  border-right: 2px solid; border-bottom: 2px solid; transform: translateY(-70%) rotate(45deg); transition: transform .2s;
+}
+.faq details[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+.faq details p { margin: 0; padding: 0 1.25rem 1.1rem; line-height: 1.6; color: var(--bridlica); }
+.sluzba__kontakt h2 { margin-bottom: 1rem; }
+.sluzba__kontakt-popis { color: #d9d6d1; max-width: 36rem; margin: 0 0 1.5rem; }
+.sluzba__telefony { display: flex; flex-wrap: wrap; gap: .5rem 2rem; margin-bottom: 1rem; }
+.sluzba__telefony a { font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(2rem, 8vw, 3.25rem); color: var(--biela); text-decoration: none; }
+.sluzba__telefony a:hover { color: #f0a7a8; }
+.sluzba__email { color: var(--biela); font-size: 1.15rem; }
+.dalsie-sluzby { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .5rem; }
+.dalsie-sluzby a {
+  display: block; padding: 1rem 1.25rem; border: 2px solid var(--grafit); color: var(--grafit); text-decoration: none;
+  font-family: var(--f-nadpis); font-weight: 700; font-size: 1.3rem;
+}
+.dalsie-sluzby a:hover { background: var(--grafit); color: var(--biela); }
+.sluzba-stranka .mriezka { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 60rem) { .sluzba-stranka .mriezka { grid-template-columns: repeat(4, 1fr); } }
+[data-galeria-sekcia][hidden] { display: none; }
+
+/* Ochrana osobných údajov */
+.pravne { max-width: 46rem; padding: 2.5rem 0 4rem; line-height: 1.65; }
+.pravne h1 { font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(2.5rem, 9vw, 4rem); line-height: 1; margin: 0 0 .5rem; }
+.pravne h2 { font-family: var(--f-nadpis); font-weight: 800; font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1.1; margin: 2.75rem 0 .75rem; scroll-margin-top: 6rem; }
+.pravne h3 { font-size: 1.1rem; margin: 1.75rem 0 .35rem; }
+.pravne p { margin: 0 0 .9rem; }
+.pravne ul { padding-left: 1.25rem; margin: 0 0 1rem; display: grid; gap: .35rem; }
+.pravne__datum { color: var(--bridlica); }
+.pravne__uvod { font-size: 1.1rem; }
+.pravne__zaklad { font-size: .95rem; color: var(--bridlica); border-left: 3px solid var(--linka); padding-left: 1rem; }
+.pravne__karta { display: grid; gap: .5rem; margin: 0 0 1rem; padding: 1.25rem 1.5rem; background: var(--kamen); }
+.pravne__karta div { display: grid; grid-template-columns: minmax(0, 10rem) 1fr; gap: 1rem; }
+.pravne__karta div[hidden] { display: none; }
+.pravne__karta dt { color: var(--bridlica); }
+.pravne__karta dd { margin: 0; font-weight: 600; }
+@media (max-width: 30rem) { .pravne__karta div { grid-template-columns: 1fr; gap: 0; } }

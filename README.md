@@ -7,6 +7,8 @@ Web pre KMG stav: strechy, oplechovanie atík, chaty, prístrešky, altánky, pe
 | `kmgstav.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
 | `kmgstav.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
 | `kmgstav.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky**, **Ponuky** a **Faktúry**. Cenník, Cena práce, vlastné kategórie a údaje firmy sú v Ponukách. |
+| `kmgstav.sk/strechy-bardejov` a ďalšie | Stránky služieb pre Google: strechy, oplechovanie atiky, drevodomy, chaty, prístrešky, altánky a pergoly, pivnice a interiéry (všetky s „Bardejov“) |
+| `kmgstav.sk/ochrana-osobnych-udajov` | Ochrana osobných údajov (GDPR) a cookies |
 | `kmgstav.sk/fotky`, `kmgstav.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
 ## Nasadenie (raz, asi 15 minút)
@@ -106,6 +108,45 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
   Tie isté údaje sa zobrazujú aj **na webe**: telefóny (viac čísel oddeľte čiarkou) v úvode, v kontakte a v plávajúcom
   tlačidle, e-mail a Facebook v kontakte, adresa, IČO, DIČ a IČ DPH v päte stránky. Na webe sa zmena prejaví do 2 minút.
+
+## Právne náležitosti webu
+- **Cookie lišta nie je potrebná:** verejný web neukladá do zariadenia návštevníka nič (žiadne cookies, localStorage,
+  analytika ani reklamy). Súhlas podľa § 109 ods. 8 zákona č. 452/2021 Z. z. sa vyžaduje len pri iných ako nevyhnutných
+  cookies. Jediný cookie je prihlasovací v správe webu – nevyhnutný. Ak by ste neskôr pridali Google Analytics,
+  Facebook pixel, vložené mapy či videá, cookie lišta bude potrebná.
+- **Písma sú na našom serveri** (`public/assets/fonts`, Fira Sans, licencia OFL), nie z Google Fonts – návštevníkova
+  IP adresa sa neposiela Googlu (rozsudok LG München 2022). Web sa nespája so žiadnym cudzím serverom.
+- **Povinné údaje podnikateľa** (§ 3a Obchodného zákonníka: obchodné meno, miesto podnikania, IČO, zápis v registri)
+  sú v päte každej stránky – berú sa z aplikácie (Údaje na ponuke a faktúre). Vymyslené hodnoty sa nezobrazujú.
+- **Ochrana osobných údajov** (`/ochrana-osobnych-udajov`, čl. 13 GDPR): prevádzkovateľ (doplní sa z aplikácie),
+  účely, právne základy, lehoty (faktúry 10 rokov podľa zákona o účtovníctve), príjemcovia (Vercel – certifikovaný
+  v EU-US Data Privacy Framework, Google pre e-mail, Meta pri Facebooku, účtovník, banka), práva a dozorný úrad.
+  Text je všeobecný vzor pre malého živnostníka – nechajte si ho skontrolovať, ak spracúvate údaje inak.
+  Stránka sľubuje, že pri fotkách sa neuvádzajú mená ani presné adresy (len obec) a nie sú na nich rozpoznateľné osoby.
+
+## SEO (Google)
+- Každá služba má vlastnú stránku s „Bardejov“ v titulku, nadpise, texte aj adrese: `strechy-bardejov`,
+  `oplechovanie-atiky-bardejov`, `drevodomy-bardejov`, `chaty-bardejov`, `pristresky-bardejov`,
+  `altanky-pergoly-bardejov`, `pivnice-interiery-bardejov`. Karty služieb na úvode vedú na ne.
+- Štruktúrované dáta (schema.org): úvod `RoofingContractor` (doplní sa adresa, IČO, telefón a Facebook z aplikácie),
+  stránky služieb `Service`, `BreadcrumbList` a `FAQPage`.
+- `sitemap.xml`, `robots.txt` (správa a API sú zakázané), kanonické adresy na `https://www.kmgstav.sk`,
+  Open Graph s obrázkom `assets/img/og.jpg` (náhľad pri zdieľaní na Facebooku/WhatsAppe).
+- `kmg-web.vercel.app` trvalo presmeruje na `www.kmgstav.sk` (žiadny duplicitný obsah).
+- Texty stránok služieb, päta, ochrana údajov, sitemap a robots sa generujú skriptom
+  `python3 nastroje/stranky.py` (texty sú v ňom). Po úprave ho spustite a vygenerované súbory commitnite.
+- Fotky na webe majú popis (alt) z názvu zákazky – **do názvu zákazky píšte obec**, napr. „Výmena strechy, Bardejov“.
+
+### Čo treba urobiť mimo webu (najväčší vplyv na „strechy Bardejov“)
+1. **Firemný profil na Googli** (business.google.com): názov KMG stav, hlavná kategória pokrývač (Roofing contractor),
+   ďalšie napr. klampiar, tesár, stavebná firma; oblasť pôsobenia Bardejov a okolité obce (adresu domu môžete skryť);
+   telefón, web `https://www.kmgstav.sk`, fotky prác. Po overení profilu **zbierajte recenzie od zákazníkov** –
+   to je pri miestnom hľadaní najdôležitejšie.
+2. **Google Search Console** (search.google.com/search-console): pridať doménu `kmgstav.sk` (overenie TXT záznamom
+   vo Websupporte → DNS → TXT), odoslať `https://www.kmgstav.sk/sitemap.xml` a požiadať o indexovanie úvodu
+   a stránky `strechy-bardejov`.
+3. Facebook stránku zadať v aplikácii (Údaje → Facebook) a na Facebooku uviesť odkaz na web.
+4. Pravidelne pridávať zákazky s fotkami (s obcou v názve).
 
 ## Limity bezplatného úložiska (Vercel Blob, plán Hobby, mesačne)
 | Čo | Limit | Ako to vychádza |

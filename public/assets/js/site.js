@@ -150,13 +150,43 @@
       f.dic && `DIČ: ${f.dic}`,
       f.icdph && `IČ DPH: ${f.icdph}`,
     ].filter(Boolean).join(', ');
+    // Povinné údaje podnikateľa (§ 3a Obchodného zákonníka): obchodné meno, miesto podnikania, IČO, zápis v registri
+    const meno = f.obchodneMeno && f.obchodneMeno !== f.nazov ? f.obchodneMeno : '';
     document.querySelectorAll('[data-firma-udaje]').forEach((el) => {
-      el.replaceChildren(...[f.adresa, ids].filter(Boolean).map((riadok) => {
+      el.replaceChildren(...[meno, f.adresa, ids, f.register].filter(Boolean).map((riadok) => {
         const p = document.createElement('p');
         p.textContent = riadok;
         return p;
       }));
     });
+    // Jednotlivé polia (stránka Ochrana osobných údajov): riadok sa ukáže, až keď je údaj vyplnený
+    const hodnoty = { ...f, prevadzkovatel: f.obchodneMeno || f.nazov, telefony: (f.telefony || []).join(', ') };
+    document.querySelectorAll('[data-firma-pole]').forEach((el) => {
+      const v = hodnoty[el.dataset.firmaPole];
+      if (!v) return;
+      if (el.tagName === 'A' && el.dataset.firmaPole === 'email') el.href = `mailto:${v}`;
+      el.textContent = v;
+      el.closest('[data-firma-riadok]')?.removeAttribute('hidden');
+    });
+    // Štruktúrované dáta pre Google (LocalBusiness): adresa, telefóny a Facebook z aplikácie
+    const ld = document.getElementById('ld-firma');
+    if (ld) {
+      try {
+        const data = JSON.parse(ld.textContent);
+        if (tel[0]) data.telephone = telOdkaz(tel[0]).slice(4);
+        if (f.email) data.email = f.email;
+        if (f.facebook) data.sameAs = [f.facebook];
+        if (f.adresa) {
+          const m = /^(.*?),?\s*(\d{3}\s?\d{2})\s+(.+)$/.exec(f.adresa);
+          data.address = m
+            ? { '@type': 'PostalAddress', streetAddress: m[1], postalCode: m[2], addressLocality: m[3], addressCountry: 'SK' }
+            : { '@type': 'PostalAddress', streetAddress: f.adresa, addressCountry: 'SK' };
+        }
+        if (f.obchodneMeno) data.legalName = f.obchodneMeno;
+        if (f.ico) data.identifier = { '@type': 'PropertyValue', name: 'IČO', value: f.ico };
+        ld.textContent = JSON.stringify(data);
+      } catch { /* štruktúrované dáta ostanú pôvodné */ }
+    }
   }
   // Údaje webu (zákazky aj firma) jedným volaním; prehliadač sa vždy pýta servera (no-cache),
   // aby po zmene v aplikácii neukazoval staršiu kópiu.
@@ -194,7 +224,7 @@
       btn.setAttribute('aria-label', `${a.nazov}, ${pocetFotiek(a.fotky.length)}, otvoriť`);
       const img = document.createElement('img');
       img.src = obalAlbumu(a).nahlad;
-      img.alt = '';
+      img.alt = [a.nazov, NAZVY[a.kategoria] !== a.nazov && NAZVY[a.kategoria], 'KMG stav'].filter(Boolean).join(' – ');
       img.loading = 'lazy';
       img.decoding = 'async';
       const popis = document.createElement('span');
@@ -236,8 +266,13 @@
       albumy = [];
     }
     const kat = new URLSearchParams(location.search).get('kategoria') || '';
+    const pevne = (mriezka.dataset.kategorie || '').split(',').filter(Boolean); // stránky služieb
     if (filtre) nastavFilter(kat);
-    else vykresli(albumy);
+    else if (pevne.length) {
+      albumy = albumy.filter((a) => pevne.includes(a.kategoria));
+      vykresli(albumy);
+      if (!albumy.length) mriezka.closest('[data-galeria-sekcia]')?.setAttribute('hidden', '');
+    } else vykresli(albumy);
     sekciaPredPo();
   }
 

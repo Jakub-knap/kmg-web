@@ -41,6 +41,8 @@ export function verejnaFirma(f = {}) {
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t(f.email)) ? t(f.email) : '';
   return {
     nazov: t(f.nazov),
+    obchodneMeno: t(f.obchodneMeno),
+    register: t(f.register),
     adresa: skutocne(f, 'adresa'),
     ico: skutocne(f, 'ico'),
     dic: skutocne(f, 'dic'),

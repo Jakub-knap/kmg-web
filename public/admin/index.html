@@ -13,9 +13,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="KMG">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/assets/fonts/firasans-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="/assets/fonts/firasansextracondensed-extrabold.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
@@ -343,7 +342,7 @@
             <label>Sadzba DPH (%)<input name="sadzbaDph" inputmode="decimal"></label>
             <label class="cela">Text pod ponukou<textarea name="pata" rows="3"></textarea></label>
             <h2 class="cela podnadpis">Na faktúre</h2>
-            <p class="cela napoveda">Faktúru vystavuje živnostník, preto musí byť na nej jeho obchodné meno a zápis v živnostenskom registri (nájdete ich na výpise zo živnostenského registra).</p>
+            <p class="cela napoveda">Faktúru vystavuje živnostník, preto musí byť na nej jeho obchodné meno a zápis v živnostenskom registri (nájdete ich na výpise zo živnostenského registra). Tieto údaje sa spolu s adresou a IČO zobrazujú aj v päte webu – zákon ich vyžaduje na webe každého podnikateľa.</p>
             <label class="cela">Obchodné meno<input name="obchodneMeno" placeholder="napr. Ján Novák – KMG stav"></label>
             <label class="cela">Zápis v registri<input name="register" placeholder="napr. Zapísaný v Živnostenskom registri OÚ Žilina, č. 580-12345"></label>
             <label>SWIFT / BIC<input name="swift" placeholder="nepovinné"></label>
