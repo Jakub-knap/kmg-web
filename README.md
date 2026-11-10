@@ -67,6 +67,12 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Ceny v cenníku** sú nastavené na 0 €. Položky bez ceny sú v Cenníku zvýraznené.
 - **Na faktúry** (Ponuky → Údaje na ponuke, časť „Na faktúre“): obchodné meno živnostníka, zápis v živnostenskom
   registri a IBAN. Kým chýbajú, záložka Faktúry na to upozorňuje; bez IBAN nebude na faktúre QR platba.
+- **Bankové údaje a QR platba:** SWIFT a BIC je ten istý kód banky – zadáva sa do poľa **BIC / SWIFT**
+  (pri Revolute s IBAN-om LT… je to REVOLT21). Kód **sprostredkujúcej banky**, ktorý Revolut ukazuje pri
+  medzinárodných platbách, patrí do samostatného poľa – vytlačí sa na faktúre, do QR kódu nie. Formulár hneď
+  kontroluje IBAN (kontrolný súčet) a či je BIC z rovnakej krajiny ako IBAN; nesprávny BIC sa do QR kódu nedá,
+  lebo banky takú platbu odmietajú. Tlačidlo **Skúšobný QR kód na 1,00 €** ukáže kód na overenie v aplikácii
+  slovenskej banky (aplikácia Revolut PAY by square podľa všetkého nečíta).
 
 ## Ako sa to používa
 - **Fotky (zákazky):** Nová zákazka → názov (napr. „Rekonštrukcia strechy, Žilina“) a druh stavby →

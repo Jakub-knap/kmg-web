@@ -300,6 +300,14 @@
         </form>
       </main>
 
+      <dialog class="qr-okno" data-qr-okno aria-labelledby="qr-okno-nadpis">
+        <h2 id="qr-okno-nadpis">Skúšobný QR kód</h2>
+        <div class="qr-okno__kod" data-qr-kod></div>
+        <p data-qr-popis></p>
+        <p class="napoveda">Naskenujte ho v aplikácii slovenskej banky (Tatra banka, Slovenská sporiteľňa, VÚB, ČSOB, 365.bank a pod.) – mal by sa vyplniť príkaz na 1,00 € na váš účet. Platbu nemusíte odoslať. Aplikácia Revolut tieto slovenské QR kódy podľa všetkého nečíta – na skúšku použite aplikáciu inej banky.</p>
+        <button type="button" class="tlacidlo" data-qr-zavriet>Zavrieť</button>
+      </dialog>
+
       <!-- CENNÍKY (Cenník, Cena práce, vlastné kategórie) -->
       <main class="obal panel" data-panel="cennik" hidden>
         <a class="spat" href="#ponuky">Späť na ponuky</a>
@@ -345,7 +353,13 @@
             <p class="cela napoveda">Faktúru vystavuje živnostník, preto musí byť na nej jeho obchodné meno a zápis v živnostenskom registri (nájdete ich na výpise zo živnostenského registra). Tieto údaje sa spolu s adresou a IČO zobrazujú aj v päte webu – zákon ich vyžaduje na webe každého podnikateľa.</p>
             <label class="cela">Obchodné meno<input name="obchodneMeno" placeholder="napr. Ján Novák – KMG stav"></label>
             <label class="cela">Zápis v registri<input name="register" placeholder="napr. Zapísaný v Živnostenskom registri OÚ Žilina, č. 580-12345"></label>
-            <label>SWIFT / BIC<input name="swift" placeholder="nepovinné"></label>
+            <label>BIC / SWIFT<input name="swift" autocapitalize="characters" placeholder="napr. REVOLT21, TATRSKBX"></label>
+            <label>Sprostredkujúca banka (BIC)<input name="bicSprostredkujuca" autocapitalize="characters" placeholder="nepovinné"></label>
+            <p class="cela napoveda">SWIFT a BIC je ten istý kód banky (8 alebo 11 znakov). Pri Revolute je to kód z údajov o účte v eurách (SEPA), napr. REVOLT21 pri litovskom IBAN-e. Kód <em>sprostredkujúcej banky</em>, ktorý Revolut ukazuje pri medzinárodných platbách, patrí do druhého poľa – na faktúre sa vytlačí, ale do QR kódu sa nedáva.</p>
+            <div class="cela bankova-kontrola" data-banka-kontrola hidden></div>
+            <div class="cela">
+              <button type="button" class="tlacidlo tlacidlo--obrys" data-skusobny-qr>Skúšobný QR kód na 1,00 €</button>
+            </div>
             <label>Splatnosť faktúr (dni)<input name="splatnostDni" inputmode="numeric"></label>
           </div>
           <div class="lista-akcii"><button type="submit" class="tlacidlo">Uložiť údaje</button></div>

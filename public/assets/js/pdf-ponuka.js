@@ -233,7 +233,8 @@
         ['Variabilný symbol', p.vs || p.id, true],
         ['Forma úhrady', 'prevodom na účet'],
         f.iban && ['IBAN', String(f.iban).replace(/\s+/g, '').replace(/(.{4})/g, '$1 ').trim(), true],
-        f.swift && ['SWIFT', f.swift],
+        f.swift && ['BIC / SWIFT', String(f.swift).replace(/\s+/g, '').toUpperCase()],
+        f.bicSprostredkujuca && ['Sprostredkujúca banka', String(f.bicSprostredkujuca).replace(/\s+/g, '').toUpperCase()],
       ].filter(Boolean);
       const vyskaBoxu = riadkyPlatby.length * 14 + 12;
       st.page.drawRectangle({ x: xBox - 10, y: y - vyskaBoxu + 8, width: PRAVY - xBox + 10, height: vyskaBoxu + 4, color: PODKLAD });

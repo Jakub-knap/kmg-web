@@ -423,3 +423,14 @@ a.spat { display: inline-block; }
 .polia .napoveda { margin: 0; }
 .varovanie a { color: inherit; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .faktura-riadok { transition: none; } }
+
+/* Kontrola bankových údajov a skúšobný QR kód */
+.bankova-kontrola { padding: .75rem 1rem; border-left: 4px solid #2d7a45; background: #eef6f0; color: #22613a; font-size: .95rem; }
+.bankova-kontrola[data-stav='chyba'] { border-left-color: #c77700; background: #fdf3e2; color: #6b4300; }
+.qr-okno { border: 0; padding: 1.5rem; width: min(26rem, calc(100% - 2rem)); text-align: center; }
+.qr-okno::backdrop { background: rgba(31, 30, 28, .6); }
+.qr-okno h2 { margin: 0 0 1rem; font-size: 1.6rem; }
+.qr-okno__kod { display: grid; place-items: center; margin: 0 auto 1rem; }
+.qr-okno__kod svg { width: min(15rem, 70vw); height: auto; }
+.qr-okno p { margin: 0 0 .75rem; }
+.qr-okno .napoveda { text-align: left; }

@@ -17,6 +17,7 @@ export const DEFAULT_SETTINGS = {
     facebook: '',
     iban: '',
     swift: '',
+    bicSprostredkujuca: '', // len pre medzinárodné (SWIFT) platby, napr. pri Revolute; do QR kódu sa nedáva
     // Na faktúre: obchodné meno živnostníka (ak je prázdne, použije sa názov) a zápis v živnostenskom registri
     obchodneMeno: '',
     register: '',

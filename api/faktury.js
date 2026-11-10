@@ -59,6 +59,7 @@ function dodavatel(firma = {}) {
     icdph: text(firma.icdph, 40),
     iban: text(firma.iban, 60),
     swift: text(firma.swift, 20),
+    bicSprostredkujuca: text(firma.bicSprostredkujuca, 20),
     register: text(firma.register, 300),
     telefon: text(firma.telefon, 120),
     email: text(firma.email, 120),

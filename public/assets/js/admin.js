@@ -842,7 +842,63 @@
       else el.value = CISLA_FIRMY.includes(el.name) ? vstup(f[el.name]) : f[el.name] ?? '';
     }
     $('[data-vymyslene]').hidden = !Object.entries(VYMYSLENE).some(([k, v]) => (f[k] || '').trim() === v);
+    kontrolaBanky();
   }
+
+  // Kontrola IBAN a BIC priamo vo formulári (QR platba na faktúre)
+  function kontrolaBanky() {
+    const box = $('[data-banka-kontrola]');
+    const Q = window.KMGQr;
+    if (!box || !Q) return;
+    const iban = formFirma.elements.iban.value.trim();
+    const bic = formFirma.elements.swift.value.trim();
+    const sprostredkujuca = formFirma.elements.bicSprostredkujuca.value.trim();
+    const spravy = [];
+    let ok = false;
+    if (iban && !Q.platnyIban(iban)) spravy.push('IBAN nie je platný – skontrolujte ho (preklep v čísle). Bez platného IBAN-u nebude na faktúre QR kód.');
+    else if (iban) ok = true;
+    if (bic && !Q.platnyBic(bic)) spravy.push('BIC / SWIFT má mať 8 alebo 11 znakov (písmená a čísla), napr. REVOLT21.');
+    else if (bic && iban && Q.platnyIban(iban) && !Q.platnyBic(bic, iban)) {
+      spravy.push(`BIC ${bic.toUpperCase()} je z inej krajiny ako IBAN (${Q.platnyIban(iban).slice(0, 2)}). Banky takú platbu často odmietnu, preto ho do QR kódu nedám. Pri Revolute s IBAN-om LT… je správny BIC REVOLT21.`);
+    }
+    if (sprostredkujuca && !Q.platnyBic(sprostredkujuca)) spravy.push('Kód sprostredkujúcej banky má mať 8 alebo 11 znakov.');
+    box.hidden = !iban && !bic;
+    box.dataset.stav = spravy.length ? 'chyba' : 'ok';
+    box.textContent = spravy.length ? spravy.join(' ') : ok ? 'IBAN je v poriadku – QR platba na faktúre bude fungovať.' : '';
+    if (!box.textContent) box.hidden = true;
+  }
+  formFirma.addEventListener('input', (e) => {
+    if (['iban', 'swift', 'bicSprostredkujuca'].includes(e.target.name)) kontrolaBanky();
+  });
+
+  // Skúšobný QR kód na 1 € – overenie v aplikácii banky ešte pred prvou faktúrou
+  function qrSvg(q, velkost = 240) {
+    const okraj = 4;
+    const n = q.velkost + okraj * 2;
+    let cesta = '';
+    for (let y = 0; y < q.velkost; y++) {
+      for (let x = 0; x < q.velkost; x++) if (q.tmavy(x, y)) cesta += `M${x + okraj} ${y + okraj}h1v1h-1z`;
+    }
+    return `<svg viewBox="0 0 ${n} ${n}" width="${velkost}" height="${velkost}" shape-rendering="crispEdges" role="img" aria-label="QR kód platby"><rect width="${n}" height="${n}" fill="#fff"/><path d="${cesta}" fill="#000"/></svg>`;
+  }
+  $('[data-skusobny-qr]').addEventListener('click', () => {
+    const el = formFirma.elements;
+    const Q = window.KMGQr;
+    try {
+      if (!Q) throw new Error('Nástroj na QR kód sa nenačítal. Obnovte stránku.');
+      const text = Q.payBySquare({
+        suma: 1, iban: el.iban.value, swift: el.swift.value, vs: '1', splatnost: dnes(),
+        poznamka: 'Skúšobná platba', prijemca: el.obchodneMeno.value || el.nazov.value, adresa1: el.adresa.value,
+      });
+      $('[data-qr-kod]').innerHTML = qrSvg(Q.qr(text, 'M'));
+      const bic = Q.platnyBic(el.swift.value, el.iban.value);
+      $('[data-qr-popis]').textContent = `Príjemca: ${el.obchodneMeno.value || el.nazov.value} · IBAN: ${Q.platnyIban(el.iban.value).replace(/(.{4})/g, '$1 ').trim()}${bic ? ` · BIC: ${bic}` : ''} · 1,00 €`;
+      $('[data-qr-okno]').showModal();
+    } catch (err) {
+      oznam(err.message === 'Neplatný IBAN.' ? 'Najprv zadajte platný IBAN.' : err.message, true);
+    }
+  });
+  $('[data-qr-zavriet]').addEventListener('click', () => $('[data-qr-okno]').close());
   formFirma.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = formFirma.querySelector('[type=submit]');
@@ -1450,6 +1506,7 @@
     if (Object.entries(VYMYSLENE).some(([k, v]) => !String(f[k] || '').trim() || String(f[k]).trim() === v)) ch.push('skutočné IČO, DIČ a adresa');
     if (!String(f.register || '').trim()) ch.push('zápis v živnostenskom registri');
     if (!String(f.iban || '').trim()) ch.push('IBAN (bez neho nebude na faktúre QR platba)');
+    else if (window.KMGQr && !window.KMGQr.platnyIban(f.iban)) ch.push('platný IBAN (zadaný IBAN má chybu, QR platba nebude fungovať)');
     return ch;
   }
 
@@ -1826,12 +1883,31 @@
     });
   });
 
+  // Údaje dodávateľa na PDF: nezaplatená faktúra vždy podľa aktuálnych nastavení (rovnako ako server pri uložení),
+  // zaplatená podľa snímky z vystavenia; prázdne polia snímky sa doplnia z nastavení.
+  function dodavatelZNastaveni(firma = {}) {
+    const t = (v) => String(v ?? '').trim();
+    return {
+      nazov: t(firma.obchodneMeno) || t(firma.nazov), znacka: t(firma.nazov), adresa: t(firma.adresa), ico: t(firma.ico),
+      dic: t(firma.dic), icdph: t(firma.icdph), iban: t(firma.iban), swift: t(firma.swift),
+      bicSprostredkujuca: t(firma.bicSprostredkujuca), register: t(firma.register), telefon: t(firma.telefon),
+      email: t(firma.email), web: t(firma.web),
+    };
+  }
+  function udajeDodavatela(f) {
+    const firma = stav.nastavenia?.firma || {};
+    const aktualne = dodavatelZNastaveni(firma);
+    if (!f.zaplatena) return { ...firma, ...aktualne };
+    const snimka = Object.fromEntries(Object.entries(f.dodavatel || {}).filter(([, v]) => String(v ?? '').trim()));
+    return { ...firma, ...aktualne, ...snimka };
+  }
+
   // PDF faktúry
   async function pdfFaktury() {
     if (!stav.faktura.id || stav.fakturaZmenena) await ulozFakturu();
     if (!window.KMGPdf) throw new Error('Nástroj na PDF sa nenačítal.');
     const f = stav.faktura;
-    const blob = await window.KMGPdf.vytvor(f, { ...(stav.nastavenia?.firma || {}), ...(f.dodavatel || {}) }, 'faktura');
+    const blob = await window.KMGPdf.vytvor(f, udajeDodavatela(f), 'faktura');
     return { blob, nazov: window.KMGPdf.nazovSuboru(f, 'faktura') };
   }
   const fStiahnut = $('[data-f-stiahnut]');

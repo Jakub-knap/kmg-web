@@ -142,11 +142,31 @@
     return vystup;
   }
 
+  // ---------- Kontrola bankových údajov ----------
+  const bezMedzier = (v) => String(v ?? '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  /** IBAN s platným kontrolným súčtom (mod 97), inak ''. */
+  function platnyIban(v) {
+    const iban = bezMedzier(v);
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{8,30}$/.test(iban)) return '';
+    const cisla = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, (c) => String(c.charCodeAt(0) - 55));
+    let zvysok = 0;
+    for (const c of cisla) zvysok = (zvysok * 10 + Number(c)) % 97;
+    return zvysok === 1 ? iban : '';
+  }
+  /** BIC/SWIFT (8 alebo 11 znakov) z krajiny IBAN-u, inak ''. Iná krajina = banky platbu odmietnu. */
+  function platnyBic(v, iban = '') {
+    const bic = bezMedzier(v);
+    if (!/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic)) return '';
+    const krajina = bezMedzier(iban).slice(0, 2);
+    if (krajina && bic.slice(4, 6) !== krajina) return '';
+    return bic;
+  }
+
   // ---------- PAY by square ----------
   const ciste = (s, max) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, max).trim();
   function payBySquare({ suma, iban, swift = '', vs = '', splatnost = '', poznamka = '', prijemca = '', adresa1 = '', adresa2 = '' }) {
-    const ucet = String(iban || '').replace(/\s+/g, '').toUpperCase();
-    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{8,30}$/.test(ucet)) throw new Error('Neplatný IBAN.');
+    const ucet = platnyIban(iban);
+    if (!ucet) throw new Error('Neplatný IBAN.');
     const castka = Math.round(Number(suma) * 100) / 100;
     if (!(castka > 0)) throw new Error('Suma na úhradu musí byť väčšia ako 0.');
     const polia = [
@@ -163,7 +183,7 @@
       ciste(poznamka, 140),
       '1', // počet účtov
       ucet,
-      ciste(swift, 11).replace(/\s/g, '').toUpperCase(),
+      platnyBic(swift, ucet), // nepovinný; nesprávny alebo z inej krajiny sa radšej vynechá
       '0', // trvalý príkaz: nie
       '0', // inkaso: nie
       ciste(prijemca, 70), // od 1.2.0 povinné
@@ -438,5 +458,5 @@
     return { velkost: n, verzia, tmavy: (x, y) => m[y][x] };
   }
 
-  koren.KMGQr = { qr, payBySquare, crc32, lzma, base32hex };
+  koren.KMGQr = { qr, payBySquare, platnyIban, platnyBic, crc32, lzma, base32hex };
 })(typeof window !== 'undefined' ? window : globalThis);
