@@ -169,7 +169,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - 10. 11. 2026 prišlo upozornenie na 75 % pokročilých operácií. Väčšinu spotrebovalo staré riešenie (web pri každej
   návšteve vypisoval úložisko; fotka s označením pred/po stála 6 operácií, otvorenie aplikácie 4). Odvtedy každá akcia
   vypisuje úložisko najviac raz – rovnaká práca stojí asi polovicu, fotky s označením tretinu.
-  Kým staré operácie nevypadnú z 30-dňového okna, nenahrávajte veľké dávky fotiek naraz. Na pláne Pro (20 $ mesačne) sa úložisko neblokuje, spotreba nad rámec sa doplatí
+  Kým staré operácie nevypadnú z 30-dňového okna, nenahrávajte veľké dávky fotiek naraz.
+- Na pláne Pro (20 $ mesačne) sa úložisko neblokuje, spotreba nad rámec sa doplatí
   (pri vašom objeme centy) a Pro je aj oficiálne určený na firemné použitie.
 - Web preto nečíta úložisko výpisom pri každej návšteve, ale jeden hotový súbor `verejne/web.json`,
   ktorý sa obnoví len pri zmene v aplikácii.
