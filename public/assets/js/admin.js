@@ -6,7 +6,7 @@
   ];
   const NAZOV_KAT = Object.fromEntries(KATEGORIE);
   const JEDNOTKY = ['m²', 'bm', 'ks', 'hod', 'km', 'm³', 'kg', 'paušál'];
-  const KARTY_ADMIN = ['fotky', 'ponuky', 'cennik', 'firma'];
+  const KARTY_ADMIN = ['fotky', 'ponuky', 'faktury', 'cennik', 'firma'];
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -54,6 +54,9 @@
     ponuka: null,
     ponukaZmenena: false,
     cennikZmeneny: false,
+    faktury: [],
+    faktura: null,
+    fakturaZmenena: false,
   };
 
   // ---------- Pomocníci ----------
@@ -151,7 +154,7 @@
     $('[data-odhlasit]').hidden = false;
     const admin = rola === 'admin';
     $$('[data-len-admin]').forEach((a) => { a.hidden = !admin; });
-    $('.karty').style.setProperty('--pocet', admin ? 2 : 1);
+    $('.karty').style.setProperty('--pocet', admin ? 3 : 1);
     ukazKartu();
     nacitajFotky();
     if (admin) {
@@ -164,6 +167,7 @@
         }
       });
       nacitajPonuky();
+      nacitajFaktury();
     }
   }
 
@@ -189,7 +193,7 @@
   window.addEventListener('hashchange', ukazKartu);
 
   window.addEventListener('beforeunload', (e) => {
-    if (stav.ponukaZmenena || stav.cennikZmeneny) {
+    if (stav.ponukaZmenena || stav.cennikZmeneny || stav.fakturaZmenena) {
       e.preventDefault();
       e.returnValue = '';
     }
@@ -829,12 +833,13 @@
   const formFirma = $('[data-firma]');
   // Predvolené vymyslené údaje (rovnaké ako v api/_lib/defaults.js) – web ich nezobrazuje.
   const VYMYSLENE = { ico: '12 345 678', dic: '1234567890', adresa: 'Ulica 1, 000 00 Obec' };
+  const CISLA_FIRMY = ['sadzbaDph', 'platnostDni', 'splatnostDni'];
   function vyplnFirmu() {
     const f = stav.nastavenia.firma;
     for (const el of formFirma.elements) {
       if (!el.name) continue;
       if (el.type === 'checkbox') el.checked = Boolean(f[el.name]);
-      else el.value = el.name === 'sadzbaDph' || el.name === 'platnostDni' ? vstup(f[el.name]) : f[el.name] ?? '';
+      else el.value = CISLA_FIRMY.includes(el.name) ? vstup(f[el.name]) : f[el.name] ?? '';
     }
     $('[data-vymyslene]').hidden = !Object.entries(VYMYSLENE).some(([k, v]) => (f[k] || '').trim() === v);
   }
@@ -845,7 +850,7 @@
     for (const el of formFirma.elements) {
       if (!el.name) continue;
       if (el.type === 'checkbox') f[el.name] = el.checked;
-      else if (el.name === 'sadzbaDph' || el.name === 'platnostDni') f[el.name] = num(el.value);
+      else if (CISLA_FIRMY.includes(el.name)) f[el.name] = num(el.value);
       else f[el.name] = el.value.trim();
     }
     btn.disabled = true;
@@ -854,7 +859,8 @@
     try {
       await ulozNastavenia(true);
       vyplnFirmu();
-      oznam('Údaje na ponuke uložené');
+      vykresliFaktury();
+      oznam('Údaje uložené');
     } catch (err) {
       stav.nastavenia.firma = zaloha;
       oznam(err.message, true);
@@ -874,6 +880,7 @@
       oznam(e.message, true);
     }
     vykresliZoznam();
+    vykresliFaktury();
   }
 
   function vykresliZoznam() {
@@ -891,7 +898,7 @@
         <span><span class="cislo">${esc(p.id)}</span> ${esc(p.zakaznik || 'Bez mena')}</span>
         <span class="suma">${eur.format(p.spolu || 0)}</span>
         <span class="predmet">${esc(p.predmet || '')}</span>
-        <span class="meta">${esc(datumSk(p.datum))}<span class="stitok" data-stav="${esc(p.stav)}">${esc(p.stav)}</span></span>
+        <span class="meta">${esc(datumSk(p.datum))}<span class="stitok" data-stav="${esc(p.stav)}">${esc(p.stav)}</span>${stitokFaktury(p.id)}</span>
       </button>`;
       li.querySelector('button').addEventListener('click', () => otvorPonuku(p.id));
       ul.append(li);
@@ -958,17 +965,15 @@
     }
     $('[data-zmazat-ponuku]').hidden = !p.id;
     $('[data-duplikovat]').hidden = !p.id;
+    aktualizujTlacidloFaktury();
     vykresliPolozky();
     window.scrollTo(0, 0);
   }
 
-  function vykresliPolozky() {
-    const ol = $('[data-polozky]');
-    ol.replaceChildren();
-    stav.ponuka.polozky.forEach((x, i) => {
-      const li = document.createElement('li');
-      li.dataset.i = i;
-      li.innerHTML = `
+  function riadokPolozky(x, i) {
+    const li = document.createElement('li');
+    li.dataset.i = i;
+    li.innerHTML = `
         ${x.skupina ? `<span class="polozka-skupina">${esc(x.skupina)}</span>` : ''}
         <label class="nazov"><span>Popis</span><input data-pole="nazov" value="${esc(x.nazov)}" placeholder="Popis práce alebo materiálu"></label>
         <label><span>Množstvo</span><input data-pole="mnozstvo" inputmode="decimal" value="${esc(vstup(x.mnozstvo))}"></label>
@@ -976,8 +981,11 @@
         <label><span>Cena za MJ (€)</span><input data-pole="cena" inputmode="decimal" value="${esc(vstup(x.cena))}"></label>
         <div class="spolu"><small>Spolu</small><output></output></div>
         <button type="button" class="odstranit" aria-label="Odstrániť položku">Odstrániť</button>`;
-      ol.append(li);
-    });
+    return li;
+  }
+
+  function vykresliPolozky() {
+    $('[data-polozky]').replaceChildren(...stav.ponuka.polozky.map(riadokPolozky));
     $('[data-bez-poloziek]').hidden = stav.ponuka.polozky.length > 0;
     prepocitaj();
   }
@@ -1000,7 +1008,7 @@
     return m;
   }
 
-  function suctyHtml(p, s) {
+  function suctyHtml(p, s, nazovSpolu = 'Spolu') {
     let h = '';
     const skupiny = sumyPodlaSkupin(p);
     if (skupiny.size > 1) for (const [k, v] of skupiny) h += `<dt>${esc(k)}</dt><dd>${eur.format(v)}</dd>`;
@@ -1008,9 +1016,9 @@
     if (s.zlava) h += `<dt>Zľava ${cislo.format(num(p.zlava))} %</dt><dd>−${eur.format(s.zlava)}</dd>`;
     if (p.platcaDph) {
       h += `<dt>Základ dane</dt><dd>${eur.format(s.zaklad)}</dd><dt>DPH ${cislo.format(num(p.sadzbaDph))} %</dt><dd>${eur.format(s.dph)}</dd>`;
-      h += `<dt class="spolu">Spolu s DPH</dt><dd class="spolu">${eur.format(s.spolu)}</dd>`;
+      h += `<dt class="spolu">${nazovSpolu} s DPH</dt><dd class="spolu">${eur.format(s.spolu)}</dd>`;
     } else {
-      h += `<dt class="spolu">Spolu</dt><dd class="spolu">${eur.format(s.spolu)}</dd>`;
+      h += `<dt class="spolu">${nazovSpolu}</dt><dd class="spolu">${eur.format(s.spolu)}</dd>`;
     }
     return h;
   }
@@ -1206,6 +1214,8 @@
     const suhrn = { id: ulozena.id, datum: ulozena.datum, stav: ulozena.stav, zakaznik: ulozena.zakaznik.meno, predmet: ulozena.predmet, spolu: ulozena.sucty.spolu };
     stav.ponuky = [suhrn, ...stav.ponuky.filter((x) => x.id !== ulozena.id)].sort((a, b) => b.id.localeCompare(a.id));
     vykresliZoznam();
+    vykresliFaktury();
+    aktualizujTlacidloFaktury();
     return nova;
   }
 
@@ -1390,6 +1400,463 @@
     const subor = new File([pdf.blob], pdf.nazov, { type: 'application/pdf' });
     try {
       await navigator.share({ files: [subor], title: `Cenová ponuka ${stav.ponuka.id}` });
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      stiahni(pdf.blob, pdf.nazov);
+      oznam('Poslať sa nepodarilo, PDF som stiahol do telefónu.');
+    }
+  }));
+
+  // ---------- Faktúry ----------
+  // Na vystavenie: prijaté ponuky bez faktúry. Nezaplatené: podľa splatnosti, po splatnosti červené.
+  // Archív: zaplatené (zelené). Faktúra sa vystaví z ponuky alebo prázdna.
+  const fZoznam = $('[data-faktury-zoznam]');
+  const fEditor = $('[data-faktura-editor]');
+  const F_CISELNE = ['zlava', 'sadzbaDph'];
+  const dniDo = (iso) => Math.round((new Date(`${iso}T12:00:00`) - new Date(`${dnes()}T12:00:00`)) / 864e5);
+  const dni = (n) => `${n} ${n === 1 ? 'deň' : n >= 2 && n <= 4 ? 'dni' : 'dní'}`;
+  const fakturaPonuky = (id) => stav.faktury.find((f) => f.ponuka === id);
+
+  function stitokFaktury(idPonuky) {
+    const f = fakturaPonuky(idPonuky);
+    if (!f) return '';
+    return `<span class="stitok" data-stav="${f.zaplatena ? 'zaplatená' : 'faktúra'}">${f.zaplatena ? 'zaplatená' : `faktúra ${esc(f.id)}`}</span>`;
+  }
+
+  function aktualizujTlacidloFaktury() {
+    const btn = $('[data-vystavit-fakturu]');
+    const p = stav.ponuka;
+    btn.hidden = !p?.id;
+    if (!p?.id) return;
+    const f = fakturaPonuky(p.id);
+    btn.textContent = f ? `Otvoriť faktúru ${f.id}` : 'Vystaviť faktúru';
+  }
+
+  async function nacitajFaktury() {
+    try {
+      stav.faktury = (await api('/api/faktury')).faktury || [];
+    } catch (e) {
+      oznam(e.message, true);
+    }
+    vykresliFaktury();
+    vykresliZoznam();
+  }
+
+  function chybajuceUdaje() {
+    const f = stav.nastavenia?.firma;
+    if (!f) return [];
+    const ch = [];
+    if (!String(f.obchodneMeno || '').trim()) ch.push('obchodné meno živnostníka');
+    if (Object.entries(VYMYSLENE).some(([k, v]) => !String(f[k] || '').trim() || String(f[k]).trim() === v)) ch.push('skutočné IČO, DIČ a adresa');
+    if (!String(f.register || '').trim()) ch.push('zápis v živnostenskom registri');
+    if (!String(f.iban || '').trim()) ch.push('IBAN (bez neho nebude na faktúre QR platba)');
+    return ch;
+  }
+
+  function riadokFaktury({ hlavny, akcia, trieda = '' }) {
+    const li = document.createElement('li');
+    li.className = `faktura-riadok ${trieda}`.trim();
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'faktura-riadok__hlavny';
+    b.innerHTML = hlavny.html;
+    b.addEventListener('click', hlavny.klik);
+    li.append(b);
+    if (akcia) {
+      const a = document.createElement('button');
+      a.type = 'button';
+      a.className = `tlacidlo tlacidlo--male faktura-riadok__akcia ${akcia.trieda || ''}`.trim();
+      a.innerHTML = akcia.html;
+      a.addEventListener('click', () => akcia.klik(a, li));
+      li.append(a);
+    }
+    return li;
+  }
+  const prazdny = (text) => {
+    const li = document.createElement('li');
+    li.className = 'prazdne-admin';
+    li.textContent = text;
+    return li;
+  };
+  const IKONA_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function vykresliFaktury() {
+    if (!fZoznam) return;
+    const ch = chybajuceUdaje();
+    const varovanie = $('[data-faktury-varovanie]');
+    varovanie.hidden = !ch.length;
+    if (ch.length) varovanie.innerHTML = `Na faktúre ešte chýba: ${ch.map(esc).join(', ')}. <a href="#firma">Doplniť údaje</a>`;
+
+    const pouzite = new Set(stav.faktury.map((f) => f.ponuka).filter(Boolean));
+    const naVystavenie = stav.ponuky.filter((p) => p.stav === 'prijatá' && !pouzite.has(p.id));
+    const nezaplatene = stav.faktury.filter((f) => !f.zaplatena).sort((a, b) => a.datumSplatnosti.localeCompare(b.datumSplatnosti) || a.id.localeCompare(b.id));
+    const zaplatene = stav.faktury.filter((f) => f.zaplatena).sort((a, b) => (b.datumZaplatenia || '').localeCompare(a.datumZaplatenia || '') || b.id.localeCompare(a.id));
+    const pocet = (k, n) => { $(`[data-pocet="${k}"]`).textContent = n ? String(n) : ''; };
+    pocet('vystavenie', naVystavenie.length);
+    pocet('nezaplatene', nezaplatene.length);
+    pocet('zaplatene', zaplatene.length);
+
+    $('[data-na-vystavenie]').replaceChildren(...(naVystavenie.length ? naVystavenie.map((p) => riadokFaktury({
+      hlavny: {
+        html: `<span><span class="cislo">Ponuka ${esc(p.id)}</span> ${esc(p.zakaznik || 'Bez mena')}</span>
+          <span class="suma">${eur.format(p.spolu || 0)}</span>
+          <span class="predmet">${esc(p.predmet || '')}</span>`,
+        klik: () => { location.hash = 'ponuky'; otvorPonuku(p.id); },
+      },
+      akcia: {
+        html: 'Vystaviť faktúru',
+        klik: (btn) => sCakanim(btn, 'Pripravujem…', async () => {
+          try {
+            await vystavitZPonuky(p.id);
+          } catch (e) {
+            oznam(e.message, true);
+          }
+        }),
+      },
+    })) : [prazdny('Žiadna prijatá ponuka nečaká na faktúru.')]));
+
+    $('[data-nezaplatene]').replaceChildren(...(nezaplatene.length ? nezaplatene.map((f) => {
+      const d = dniDo(f.datumSplatnosti);
+      const poSplatnosti = d < 0;
+      const termin = poSplatnosti ? `po splatnosti ${dni(-d)}` : d === 0 ? 'splatná dnes' : `splatná o ${dni(d)}`;
+      return riadokFaktury({
+        trieda: poSplatnosti ? 'po-splatnosti' : '',
+        hlavny: {
+          html: `<span><span class="cislo">${esc(f.id)}</span> ${esc(f.odberatel || 'Bez mena')}</span>
+            <span class="suma">${eur.format(f.spolu || 0)}</span>
+            <span class="predmet">${esc(f.predmet || '')}</span>
+            <span class="meta"><span class="stitok" data-stav="${poSplatnosti ? 'po-splatnosti' : 'nezaplatená'}">${esc(termin)}</span></span>`,
+          klik: () => otvorFakturu(f.id),
+        },
+        akcia: {
+          trieda: 'tlacidlo--zaplatena',
+          html: `${IKONA_OK}Zaplatená`,
+          klik: (btn, li) => nastavZaplatenu(f.id, true, btn, li),
+        },
+      });
+    }) : [prazdny('Všetky faktúry sú zaplatené.')]));
+
+    $('[data-zaplatene]').replaceChildren(...(zaplatene.length ? zaplatene.map((f) => riadokFaktury({
+      trieda: 'zaplatena',
+      hlavny: {
+        html: `<span><span class="cislo">${esc(f.id)}</span> ${esc(f.odberatel || 'Bez mena')}</span>
+          <span class="suma">${eur.format(f.spolu || 0)}</span>
+          <span class="predmet">${esc(f.predmet || '')}</span>
+          <span class="meta"><span class="stitok" data-stav="zaplatená">${IKONA_OK}zaplatená ${esc(datumSk(f.datumZaplatenia))}</span></span>`,
+        klik: () => otvorFakturu(f.id),
+      },
+    })) : [prazdny('Zatiaľ žiadna zaplatená faktúra.')]));
+  }
+
+  const suhrnFaktury = (f) => ({
+    id: f.id, ponuka: f.ponuka || '', odberatel: f.odberatel?.meno || '', predmet: f.predmet || '',
+    datumVystavenia: f.datumVystavenia, datumSplatnosti: f.datumSplatnosti, spolu: f.sucty?.spolu ?? 0,
+    zaplatena: Boolean(f.zaplatena), datumZaplatenia: f.datumZaplatenia || '',
+  });
+  function zapisSuhrn(f) {
+    stav.faktury = [suhrnFaktury(f), ...stav.faktury.filter((x) => x.id !== f.id)].sort((a, b) => b.id.localeCompare(a.id));
+    vykresliFaktury();
+    vykresliZoznam();
+    aktualizujTlacidloFaktury();
+  }
+
+  async function nastavZaplatenu(id, zaplatena, btn, li) {
+    try {
+      if (btn) btn.disabled = true;
+      const f = await api(`/api/faktury?id=${encodeURIComponent(id)}`, { method: 'PUT', body: { zaplatena } });
+      if (li && zaplatena) {
+        li.classList.add('odchadza');
+        await new Promise((ok) => { setTimeout(ok, 450); });
+      }
+      zapisSuhrn(f);
+      if (stav.faktura?.id === id) {
+        stav.faktura.zaplatena = f.zaplatena;
+        stav.faktura.datumZaplatenia = f.datumZaplatenia;
+        ukazStavPlatby();
+      }
+      oznam(zaplatena ? `Faktúra ${id} je zaplatená – presunutá do archívu` : `Faktúra ${id} je znova medzi nezaplatenými`);
+    } catch (e) {
+      oznam(e.message, true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function novaFaktura(p) {
+    const firma = stav.nastavenia?.firma || {};
+    const d = dnes();
+    const splatnost = Number.isFinite(Number(firma.splatnostDni)) ? Number(firma.splatnostDni) : 14;
+    return {
+      id: null,
+      ponuka: p?.id || '',
+      datumVystavenia: d,
+      datumDodania: d,
+      datumSplatnosti: pridajDni(d, splatnost),
+      odberatel: { meno: p?.zakaznik?.meno || '', adresa: p?.zakaznik?.adresa || '', ico: '', dic: '', icdph: '', email: p?.zakaznik?.email || '', telefon: p?.zakaznik?.telefon || '' },
+      predmet: p?.predmet || '',
+      polozky: structuredClone(p?.polozky || []),
+      zlava: p?.zlava || 0,
+      platcaDph: p ? Boolean(p.platcaDph) : Boolean(firma.platcaDph),
+      sadzbaDph: p?.sadzbaDph ?? firma.sadzbaDph ?? 23,
+      poznamka: '',
+      zaplatena: false,
+      datumZaplatenia: '',
+    };
+  }
+
+  async function vystavitZPonuky(id) {
+    if (stav.fakturaZmenena && stav.faktura && !confirm('Máte neuložené zmeny v inej faktúre. Zahodiť ich?')) return;
+    const existujuca = fakturaPonuky(id);
+    if (existujuca) {
+      await otvorFakturu(existujuca.id);
+      return;
+    }
+    let p;
+    if (stav.ponuka?.id === id) {
+      if (stav.ponukaZmenena) await ulozPonuku();
+      p = stav.ponuka;
+    } else {
+      p = await api(`/api/offers?id=${encodeURIComponent(id)}`);
+    }
+    if (p.stav !== 'prijatá') {
+      // faktúra znamená, že zákazník ponuku prijal
+      const ulozena = await api('/api/offers', { method: 'POST', body: { ...p, stav: 'prijatá' } });
+      if (stav.ponuka?.id === id) stav.ponuka = ulozena;
+      stav.ponuky = stav.ponuky.map((x) => (x.id === id ? { ...x, stav: 'prijatá' } : x));
+      vykresliZoznam();
+    }
+    // editor ponuky zavrieť bez otázok (je uložená)
+    stav.ponukaZmenena = false;
+    stav.ponuka = null;
+    editor.hidden = true;
+    zoznamBox.hidden = false;
+    stav.faktura = novaFaktura(p);
+    stav.fakturaZmenena = true;
+    location.hash = 'faktury';
+    ukazFakturu();
+  }
+
+  async function otvorFakturu(id) {
+    if (stav.fakturaZmenena && stav.faktura?.id !== id && !confirm('Máte neuložené zmeny vo faktúre. Zahodiť ich?')) return;
+    try {
+      stav.faktura = await api(`/api/faktury?id=${encodeURIComponent(id)}`);
+      stav.fakturaZmenena = false;
+      if (location.hash !== '#faktury') location.hash = 'faktury';
+      ukazFakturu();
+    } catch (e) {
+      oznam(e.message, true);
+    }
+  }
+
+  function ukazStavPlatby() {
+    const f = stav.faktura;
+    const el = $('[data-stav-platby]');
+    const btn = $('[data-f-zaplatena]');
+    el.hidden = !f.id;
+    btn.hidden = !f.id;
+    if (!f.id) return;
+    const d = dniDo(f.datumSplatnosti);
+    el.dataset.stav = f.zaplatena ? 'zaplatená' : d < 0 ? 'po-splatnosti' : 'nezaplatená';
+    el.innerHTML = f.zaplatena ? `${IKONA_OK}Zaplatená ${esc(datumSk(f.datumZaplatenia))}` : d < 0 ? `Po splatnosti ${dni(-d)}` : 'Nezaplatená';
+    btn.innerHTML = f.zaplatena ? 'Vrátiť medzi nezaplatené' : `${IKONA_OK}Označiť ako zaplatenú`;
+    btn.classList.toggle('tlacidlo--zaplatena', !f.zaplatena);
+    btn.classList.toggle('tlacidlo--obrys', f.zaplatena);
+    fEditor.classList.toggle('faktura--zaplatena', Boolean(f.zaplatena));
+  }
+
+  function ukazFakturu() {
+    window.KMGPdf?.priprav().catch(() => {});
+    const f = stav.faktura;
+    fZoznam.hidden = true;
+    fEditor.hidden = false;
+    $('[data-faktura-nadpis]').textContent = f.id ? `Faktúra ${f.id}` : 'Nová faktúra';
+    $('[data-faktura-info]').textContent = f.id
+      ? `Variabilný symbol ${f.id}${f.ponuka ? ` · z ponuky ${f.ponuka}` : ''}`
+      : `${f.ponuka ? `Z ponuky ${f.ponuka}. ` : ''}Skontrolujte údaje a ťuknite na Vystaviť – faktúra dostane číslo.`;
+    for (const el of fEditor.elements) {
+      if (!el.name) continue;
+      const v = getPath(f, el.name);
+      if (el.type === 'checkbox') el.checked = Boolean(v);
+      else if (F_CISELNE.includes(el.name)) el.value = v ? vstup(v) : '';
+      else el.value = v ?? '';
+    }
+    $('[data-f-zmazat]').hidden = !f.id;
+    $('[data-f-ulozit]').textContent = f.id ? 'Uložiť' : 'Vystaviť';
+    ukazStavPlatby();
+    vykresliFPolozky();
+    window.scrollTo(0, 0);
+  }
+
+  function zavriFakturu() {
+    if (stav.fakturaZmenena && !confirm('Máte neuložené zmeny vo faktúre. Zahodiť ich?')) return;
+    stav.fakturaZmenena = false;
+    stav.faktura = null;
+    fEditor.hidden = true;
+    fZoznam.hidden = false;
+    window.scrollTo(0, 0);
+  }
+  $('[data-faktura-spat]').addEventListener('click', zavriFakturu);
+
+  function vykresliFPolozky() {
+    $('[data-f-polozky]').replaceChildren(...stav.faktura.polozky.map(riadokPolozky));
+    $('[data-f-bez-poloziek]').hidden = stav.faktura.polozky.length > 0;
+    prepocitajFakturu();
+  }
+  function prepocitajFakturu() {
+    const f = stav.faktura;
+    $('[data-f-sadzba]').hidden = !f.platcaDph;
+    $$('[data-f-polozky] li').forEach((li) => {
+      const x = f.polozky[Number(li.dataset.i)];
+      $('output', li).textContent = eur.format(r2(num(x.mnozstvo) * num(x.cena)));
+    });
+    $('[data-f-sucty]').innerHTML = suctyHtml(f, spocitaj(f), 'Na úhradu');
+  }
+
+  fEditor.addEventListener('input', (e) => {
+    const t = e.target;
+    const f = stav.faktura;
+    if (!f) return;
+    const li = t.closest('[data-f-polozky] li');
+    if (li) {
+      const x = f.polozky[Number(li.dataset.i)];
+      x[t.dataset.pole] = ['mnozstvo', 'cena'].includes(t.dataset.pole) ? num(t.value) : t.value;
+    } else if (t.name) {
+      if (t.type === 'checkbox') setPath(f, t.name, t.checked);
+      else if (F_CISELNE.includes(t.name)) setPath(f, t.name, num(t.value));
+      else setPath(f, t.name, t.value);
+    } else return;
+    stav.fakturaZmenena = true;
+    prepocitajFakturu();
+  });
+  fEditor.addEventListener('change', (e) => {
+    const t = e.target;
+    if (!stav.faktura || !t.name || t.type !== 'checkbox') return;
+    setPath(stav.faktura, t.name, t.checked);
+    stav.fakturaZmenena = true;
+    prepocitajFakturu();
+  });
+  fEditor.addEventListener('click', (e) => {
+    const btn = e.target.closest('.odstranit');
+    if (!btn) return;
+    stav.faktura.polozky.splice(Number(btn.closest('li').dataset.i), 1);
+    stav.fakturaZmenena = true;
+    vykresliFPolozky();
+  });
+  $('[data-f-pridat]').addEventListener('click', () => {
+    stav.faktura.polozky.push({ nazov: '', jednotka: 'ks', mnozstvo: 1, cena: 0, skupina: '' });
+    stav.fakturaZmenena = true;
+    vykresliFPolozky();
+    $('[data-f-polozky] li:last-child input').focus();
+  });
+
+  async function ulozFakturu() {
+    const f = stav.faktura;
+    if (!String(f.odberatel?.meno || '').trim()) throw new Error('Doplňte odberateľa (meno alebo firmu).');
+    if (!f.polozky.some((x) => String(x.nazov || '').trim())) throw new Error('Faktúra musí mať aspoň jednu položku.');
+    const nova = !f.id;
+    const ulozena = await api('/api/faktury', { method: 'POST', body: f });
+    stav.faktura = ulozena;
+    stav.fakturaZmenena = false;
+    zapisSuhrn(ulozena);
+    $('[data-faktura-nadpis]').textContent = `Faktúra ${ulozena.id}`;
+    $('[data-faktura-info]').textContent = `Variabilný symbol ${ulozena.id}${ulozena.ponuka ? ` · z ponuky ${ulozena.ponuka}` : ''}`;
+    $('[data-f-zmazat]').hidden = false;
+    $('[data-f-ulozit]').textContent = 'Uložiť';
+    ukazStavPlatby();
+    return nova;
+  }
+
+  fEditor.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('[data-f-ulozit]');
+    btn.disabled = true;
+    try {
+      const nova = await ulozFakturu();
+      oznam(nova ? `Faktúra ${stav.faktura.id} je vystavená` : 'Zmeny uložené');
+    } catch (err) {
+      oznam(err.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('[data-f-zaplatena]').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    try {
+      if (stav.fakturaZmenena) await ulozFakturu();
+      await nastavZaplatenu(stav.faktura.id, !stav.faktura.zaplatena, btn);
+    } catch (err) {
+      oznam(err.message, true);
+    }
+  });
+
+  $('[data-f-zmazat]').addEventListener('click', (e) => {
+    dvojklik(e.currentTarget, 'Naozaj zmazať faktúru?', async () => {
+      try {
+        const id = stav.faktura.id;
+        await api(`/api/faktury?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        stav.faktury = stav.faktury.filter((x) => x.id !== id);
+        stav.fakturaZmenena = false;
+        zavriFakturu();
+        vykresliFaktury();
+        vykresliZoznam();
+        oznam(`Faktúra ${id} zmazaná`);
+      } catch (err) {
+        oznam(err.message, true);
+      }
+    });
+  });
+
+  $('[data-nova-faktura]').addEventListener('click', () => {
+    stav.faktura = novaFaktura(null);
+    stav.fakturaZmenena = false;
+    ukazFakturu();
+    $('[name="odberatel.meno"]', fEditor).focus();
+  });
+
+  $('[data-vystavit-fakturu]').addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    if (!stav.ponuka?.id) return;
+    sCakanim(btn, 'Pripravujem…', async () => {
+      try {
+        await vystavitZPonuky(stav.ponuka.id);
+      } catch (err) {
+        oznam(err.message, true);
+      }
+    });
+  });
+
+  // PDF faktúry
+  async function pdfFaktury() {
+    if (!stav.faktura.id || stav.fakturaZmenena) await ulozFakturu();
+    if (!window.KMGPdf) throw new Error('Nástroj na PDF sa nenačítal.');
+    const f = stav.faktura;
+    const blob = await window.KMGPdf.vytvor(f, { ...(stav.nastavenia?.firma || {}), ...(f.dodavatel || {}) }, 'faktura');
+    return { blob, nazov: window.KMGPdf.nazovSuboru(f, 'faktura') };
+  }
+  const fStiahnut = $('[data-f-stiahnut]');
+  const fPoslat = $('[data-f-poslat]');
+  fPoslat.hidden = btnPoslat.hidden;
+  fStiahnut.addEventListener('click', () => sCakanim(fStiahnut, 'Pripravujem PDF…', async () => {
+    try {
+      const { blob, nazov } = await pdfFaktury();
+      stiahni(blob, nazov);
+      oznam(`PDF faktúry ${stav.faktura.id} je stiahnuté`);
+    } catch (err) {
+      oznam(err.message, true);
+    }
+  }));
+  fPoslat.addEventListener('click', () => sCakanim(fPoslat, 'Pripravujem…', async () => {
+    let pdf;
+    try {
+      pdf = await pdfFaktury();
+    } catch (err) {
+      oznam(err.message, true);
+      return;
+    }
+    const subor = new File([pdf.blob], pdf.nazov, { type: 'application/pdf' });
+    try {
+      await navigator.share({ files: [subor], title: `Faktúra ${stav.faktura.id}` });
     } catch (err) {
       if (err.name === 'AbortError') return;
       stiahni(pdf.blob, pdf.nazov);

@@ -359,3 +359,67 @@ a.spat { display: inline-block; }
 #tlac .t-pata { margin-top: 8mm; font-size: 9pt; color: #444; }
 #tlac .t-podpis { margin-top: 16mm; display: flex; justify-content: flex-end; }
 #tlac .t-podpis span { border-top: 0.3mm solid #000; padding-top: 1.5mm; width: 60mm; text-align: center; font-size: 9pt; }
+
+/* Faktúry */
+.fakt-sekcia { margin: 1.75rem 0 0; }
+.fakt-sekcia h2 { display: flex; align-items: center; gap: .5rem; font-size: 1.35rem; margin: 0 0 .5rem; }
+.fakt-sekcia > .napoveda { margin-top: 0; }
+.pocitadlo:empty { display: none; }
+.pocitadlo {
+  display: inline-grid; place-items: center; min-width: 1.6rem; height: 1.6rem; padding: 0 .45rem;
+  border-radius: 999px; background: var(--grafit); color: var(--biela); font: 600 .85rem var(--f-text);
+}
+.archiv summary { cursor: pointer; list-style: none; }
+.archiv summary::-webkit-details-marker { display: none; }
+.archiv summary h2::after {
+  content: ''; width: .55rem; height: .55rem; margin-left: .35rem; border-right: 2px solid; border-bottom: 2px solid;
+  transform: translateY(-.15rem) rotate(45deg); transition: transform .2s;
+}
+.archiv[open] summary h2::after { transform: translateY(.15rem) rotate(-135deg); }
+.archiv .pocitadlo { background: #2d7a45; }
+.zoznam-faktur { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.faktura-riadok {
+  display: grid; grid-template-columns: minmax(0, 1fr); align-items: center;
+  background: var(--biela); border-left: 4px solid var(--linka); transition: opacity .45s, transform .45s, background-color .2s;
+}
+.faktura-riadok:has(.faktura-riadok__akcia) { grid-template-columns: minmax(0, 1fr) auto; }
+.faktura-riadok__hlavny {
+  width: 100%; text-align: left; cursor: pointer; border: 0; background: transparent; color: inherit; font: inherit;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem 1rem; padding: .9rem 1rem;
+}
+.faktura-riadok__hlavny .cislo { font-weight: 600; }
+.faktura-riadok__hlavny .suma { font-weight: 600; text-align: right; white-space: nowrap; }
+.faktura-riadok__hlavny .predmet { color: var(--bridlica); font-size: .92rem; }
+.faktura-riadok__hlavny .meta { text-align: right; font-size: .85rem; white-space: nowrap; }
+.faktura-riadok__akcia { margin-right: .75rem; }
+.faktura-riadok__akcia svg { width: 1.1rem; height: 1.1rem; }
+@media (max-width: 30rem) {
+  .faktura-riadok:has(.faktura-riadok__akcia) { grid-template-columns: minmax(0, 1fr); }
+  .faktura-riadok__akcia { margin: 0 1rem .9rem; }
+}
+.faktura-riadok:hover { border-left-color: var(--grafit); }
+.faktura-riadok.po-splatnosti { border-left-color: var(--cervena); }
+.faktura-riadok.zaplatena { border-left-color: #2d7a45; background: #f2f8f3; }
+.faktura-riadok.odchadza { opacity: 0; transform: translateX(2rem); background: #dcefe1; }
+.zoznam-faktur .prazdne-admin { padding: .25rem 0; }
+.stitok svg { width: .95em; height: .95em; vertical-align: -.12em; margin-right: .2rem; }
+.stitok[data-stav='zaplatená'] { background: #dcefe1; color: #22613a; }
+.stitok[data-stav='faktúra'] { background: #fff1d1; color: #6b4b0a; }
+.stitok[data-stav='nezaplatená'] { background: var(--kamen); color: var(--grafit); }
+.stitok[data-stav='po-splatnosti'] { background: #fbe3e3; color: var(--cervena-tmava); }
+.tlacidlo--zaplatena { background: #2d7a45; border-color: #2d7a45; color: #fff; }
+.tlacidlo--zaplatena:hover, .tlacidlo--zaplatena:focus-visible { background: #24653a; border-color: #24653a; color: #fff; }
+.tlacidlo--zaplatena svg { width: 1.15rem; height: 1.15rem; }
+.faktura__hlavicka { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; }
+.faktura__hlavicka h1 { margin-bottom: .25rem; }
+.stav-platby {
+  display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .85rem; border-radius: 999px;
+  font-weight: 600; font-size: .95rem; background: var(--kamen);
+}
+.stav-platby svg { width: 1rem; height: 1rem; }
+.stav-platby[data-stav='zaplatená'] { background: #dcefe1; color: #22613a; }
+.stav-platby[data-stav='po-splatnosti'] { background: #fbe3e3; color: var(--cervena-tmava); }
+.polia .podnadpis { font-size: 1.2rem; margin: .75rem 0 -.5rem; }
+.polia .napoveda { margin: 0; }
+.varovanie a { color: inherit; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .faktura-riadok { transition: none; } }

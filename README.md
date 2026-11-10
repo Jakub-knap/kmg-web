@@ -6,7 +6,7 @@ Web pre KMG stav: strechy, oplechovanie atík, chaty, prístrešky, altánky, pe
 |---|---|
 | `kmgstav.sk` | Úvod: služby, ukážka realizácií, postup, kontakt |
 | `kmgstav.sk/galeria` | Posledné zákazky (albumy fotiek) s filtrom podľa druhu stavby |
-| `kmgstav.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky** a **Ponuky**. Cenník, Cena práce, vlastné kategórie a údaje na ponuke sú v Ponukách. |
+| `kmgstav.sk/admin` | Správa webu a aplikácia (na heslo): **Fotky**, **Ponuky** a **Faktúry**. Cenník, Cena práce, vlastné kategórie a údaje firmy sú v Ponukách. |
 | `kmgstav.sk/fotky`, `kmgstav.sk/ponuky` | Skratky, ktoré otvoria príslušnú záložku v správe |
 
 ## Nasadenie (raz, asi 15 minút)
@@ -63,6 +63,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 - **Facebook** – adresu stránky zadajte tamtiež (pole Facebook stránka). Kým je prázdne,
   odkaz na webe vedie na vyhľadávanie „KMG stav“ na Facebooku.
 - **Ceny v cenníku** sú nastavené na 0 €. Položky bez ceny sú v Cenníku zvýraznené.
+- **Na faktúry** (Ponuky → Údaje na ponuke, časť „Na faktúre“): obchodné meno živnostníka, zápis v živnostenskom
+  registri a IBAN. Kým chýbajú, záložka Faktúry na to upozorňuje; bez IBAN nebude na faktúre QR platba.
 
 ## Ako sa to používa
 - **Fotky (zákazky):** Nová zákazka → názov (napr. „Rekonštrukcia strechy, Žilina“) a druh stavby →
@@ -89,6 +91,18 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   kategórií, editor aj PDF ich zoskupia a ukážu súčet za každú kategóriu zvlášť (napr. Cenník, Cena práce).
   V ponuke sa cena dá vždy zmeniť.
   Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).
+- **Faktúry:** tri časti pod sebou.
+  - **Na vystavenie** – prijaté ponuky (stav „prijatá“), z ktorých ešte nie je faktúra. Ťuknite **Vystaviť faktúru**.
+    Rovnaké tlačidlo je aj priamo v uloženej ponuke (ponuke pri tom nastaví stav „prijatá“).
+  - **Nezaplatené** – zoradené podľa splatnosti, po splatnosti sú červené. Tlačidlo **Zaplatená** faktúru presunie do archívu.
+  - **Archív – zaplatené** – zelené, s dátumom zaplatenia. Omylom zaplatenú vrátite v detaile faktúry.
+  Faktúra preberie z ponuky zákazníka, predmet a položky; v editore sa dá všetko upraviť (pri firme doplňte IČO/DIČ).
+  Číslo dostane pri **Vystaviť**: 2026001, 2026002… (rovnaké je aj variabilným symbolom). Splatnosť je podľa
+  nastavenia (predvolene 14 dní). **Stiahnuť PDF / Poslať** vytvorí faktúru s QR kódom **PAY by square** – zákazník
+  ho naskenuje v aplikácii banky a platba sa vyplní sama. Zaplatená faktúra má v PDF pečiatku „UHRADENÉ“ a QR kód nemá.
+  Údaje dodávateľa sa do faktúry zapíšu pri uložení; kým nie je zaplatená, každé uloženie ich obnoví podľa nastavení.
+  Faktúra sa dá vystaviť aj bez ponuky (**Prázdna faktúra**).
+  Pozor: aplikácia nie je účtovný program – správnosť údajov na faktúre si overte s účtovníkom.
 - **Údaje na ponuke** (v Ponukách): údaje do hlavičky ponuky, platca DPH, sadzba DPH, platnosť ponuky, text pod ponukou.
   Tie isté údaje sa zobrazujú aj **na webe**: telefóny (viac čísel oddeľte čiarkou) v úvode, v kontakte a v plávajúcom
   tlačidle, e-mail a Facebook v kontakte, adresa, IČO, DIČ a IČ DPH v päte stránky. Na webe sa zmena prejaví do 2 minút.
@@ -98,7 +112,7 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 |---|---|---|
 | Miesto | 1 GB | fotka + náhľad ≈ 0,6 MB → asi 1 500 fotiek; 10 zákaziek po 30 fotkách ≈ 200 MB |
 | Prenos | 10 GB | stovky návštevníkov, ktorí si prezerajú veľké fotky |
-| Pokročilé operácie (nahratie, výpis súborov) | 2 000 | nahratie fotky = 2, uloženie ponuky/zákazky/údajov ≈ 2–4, otvorenie aplikácie ≈ 3; **návštevy webu = 0** |
+| Pokročilé operácie (nahratie, výpis súborov) | 2 000 | nahratie fotky = 2, uloženie ponuky/faktúry/zákazky/údajov ≈ 2–4, otvorenie aplikácie ≈ 4; **návštevy webu = 0** |
 | Jednoduché operácie (čítanie súboru mimo cache) | 10 000 | návšteva webu ≈ 1 |
 
 - **Po prekročení limitu Vercel úložisko na 30 dní zablokuje** (zmiznú fotky na webe aj ponuky v aplikácii).
@@ -122,7 +136,11 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 - Statické stránky v `public/` (HTML, CSS, JS bez buildu), funkcie vo `api/` (Vercel Functions, Node).
 - Dáta vo Vercel Blob: `zakazky/<zid>/*.json` (názov, druh, označenia pred/po), `galeria/<zid>/<fid>.jpg`, `nahlady/…` (zmenšeniny),
   staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json` (firma, `cenniky[]`, galéria),
-  `ponuky/<cislo>/*.json`. Každé uloženie vytvorí novú verziu súboru a staré zmaže.
+  `ponuky/<cislo>/*.json`, `faktury/<cislo>/*.json` (so snímkou údajov dodávateľa). Každé uloženie vytvorí novú
+  verziu súboru a staré zmaže.
+- Faktúry: `api/faktury.js` (GET zoznam/detail, POST uloženie a číslovanie RRRRNNN, PUT stav platby, DELETE).
+  QR platba: `public/assets/js/qr-platba.js` – vlastný QR enkóder a PAY by square 1.2.0 (CRC32, LZMA1 lc=3 lp=0 pb=2
+  len s literálmi a koncovou značkou, base32hex), bez externých knižníc; overené dekódovaním cez Python `lzma` a OpenCV.
 - Verejný web volá len `GET /api/web` (zákazky, limit a údaje o firme bez IBAN a bez vymyslených hodnôt).
   Odpoveď sa číta zo súboru `verejne/web.json` (prepisuje sa, cache 60 s), nie výpisom úložiska.
   Súbor obnovujú zmeny zákaziek, označení a mazanie fotiek priamo na serveri, po dávke fotiek

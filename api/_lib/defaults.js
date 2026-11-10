@@ -16,6 +16,11 @@ export const DEFAULT_SETTINGS = {
     web: 'kmgstav.sk',
     facebook: '',
     iban: '',
+    swift: '',
+    // Na faktúre: obchodné meno živnostníka (ak je prázdne, použije sa názov) a zápis v živnostenskom registri
+    obchodneMeno: '',
+    register: '',
+    splatnostDni: 14,
     platcaDph: false,
     sadzbaDph: 23,
     platnostDni: 30,

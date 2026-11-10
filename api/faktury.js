@@ -1,0 +1,231 @@
+// Faktúry (len pre admina).
+//   GET    /api/faktury               – zoznam faktúr (súhrn)
+//   GET    /api/faktury?id=2026001    – jedna faktúra
+//   POST   /api/faktury               – uloženie; nová faktúra dostane ďalšie číslo (2026001, 2026002…)
+//   PUT    /api/faktury?id=2026001    – len stav platby { zaplatena, datumZaplatenia }
+//   DELETE /api/faktury?id=2026001
+//
+// Údaje dodávateľa sa do faktúry zapíšu z Ponuky → Údaje na ponuke. Kým faktúra nie je zaplatená,
+// pri každom uložení sa obnovia (opravené IČO a pod. sa prejavia); zaplatená faktúra si ich už drží.
+import { randomUUID } from 'node:crypto';
+import { deny, fail, json } from './_lib/auth.js';
+import { loadSettings } from './_lib/settings.js';
+import { del, listAll, newest, put, readJson, removeFolder } from './_lib/store.js';
+
+const ROOT = 'faktury/';
+const ID = /^\d{7,8}$/;
+const PONUKA = /^\d{4}-\d{3,4}$/;
+const DATUM = /^\d{4}-\d{2}-\d{2}$/;
+
+const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+const text = (v, max = 300) => String(v ?? '').slice(0, max).trim();
+const num = (v, def = 0) => {
+  const n = Number(String(v ?? '').replace(/\s/g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : def;
+};
+const dnes = () => new Date().toISOString().slice(0, 10);
+const pridajDni = (iso, dni) => {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dni);
+  return d.toISOString().slice(0, 10);
+};
+
+function podlaCisla(blobs) {
+  const map = new Map();
+  for (const b of blobs) {
+    const id = b.pathname.slice(ROOT.length).split('/')[0];
+    if (!ID.test(id)) continue;
+    if (!map.has(id)) map.set(id, []);
+    map.get(id).push(b);
+  }
+  return map;
+}
+
+function spocitaj(f) {
+  const medzisucet = r2(f.polozky.reduce((s, x) => s + r2(x.mnozstvo * x.cena), 0));
+  const zlava = r2((medzisucet * f.zlava) / 100);
+  const zaklad = r2(medzisucet - zlava);
+  const dph = f.platcaDph ? r2((zaklad * f.sadzbaDph) / 100) : 0;
+  return { medzisucet, zlava, zaklad, dph, spolu: r2(zaklad + dph) };
+}
+
+function dodavatel(firma = {}) {
+  return {
+    nazov: text(firma.obchodneMeno) || text(firma.nazov),
+    znacka: text(firma.nazov),
+    adresa: text(firma.adresa),
+    ico: text(firma.ico, 40),
+    dic: text(firma.dic, 40),
+    icdph: text(firma.icdph, 40),
+    iban: text(firma.iban, 60),
+    swift: text(firma.swift, 20),
+    register: text(firma.register, 300),
+    telefon: text(firma.telefon, 120),
+    email: text(firma.email, 120),
+    web: text(firma.web, 120),
+  };
+}
+
+function clean(input, id, dod, splatnostDni = 14) {
+  const o = input?.odberatel || {};
+  const vystavena = DATUM.test(input?.datumVystavenia) ? input.datumVystavenia : dnes();
+  const f = {
+    id,
+    vs: id,
+    ponuka: PONUKA.test(input?.ponuka) ? input.ponuka : '',
+    datumVystavenia: vystavena,
+    datumDodania: DATUM.test(input?.datumDodania) ? input.datumDodania : vystavena,
+    datumSplatnosti: DATUM.test(input?.datumSplatnosti) ? input.datumSplatnosti : pridajDni(vystavena, splatnostDni),
+    odberatel: {
+      meno: text(o.meno, 200), adresa: text(o.adresa, 300), ico: text(o.ico, 40), dic: text(o.dic, 40),
+      icdph: text(o.icdph, 40), email: text(o.email, 120), telefon: text(o.telefon, 60),
+    },
+    predmet: text(input?.predmet, 300),
+    polozky: (Array.isArray(input?.polozky) ? input.polozky : [])
+      .slice(0, 300)
+      .map((x) => ({ nazov: text(x.nazov, 300), jednotka: text(x.jednotka, 20) || 'ks', mnozstvo: num(x.mnozstvo), cena: num(x.cena), skupina: text(x.skupina, 60) }))
+      .filter((x) => x.nazov),
+    zlava: Math.min(100, Math.max(0, num(input?.zlava))),
+    platcaDph: Boolean(input?.platcaDph),
+    sadzbaDph: Math.max(0, input?.sadzbaDph === undefined || input?.sadzbaDph === '' ? 23 : num(input.sadzbaDph, 23)),
+    poznamka: text(input?.poznamka, 3000),
+    zaplatena: Boolean(input?.zaplatena),
+    datumZaplatenia: '',
+    dodavatel: dod,
+    vytvorene: text(input?.vytvorene, 40) || new Date().toISOString(),
+    upravene: new Date().toISOString(),
+  };
+  if (f.zaplatena) f.datumZaplatenia = DATUM.test(input?.datumZaplatenia) ? input.datumZaplatenia : dnes();
+  f.sucty = spocitaj(f);
+  return f;
+}
+
+const suhrn = (f) => ({
+  id: f.id,
+  ponuka: f.ponuka || '',
+  odberatel: f.odberatel?.meno || '',
+  predmet: f.predmet || '',
+  datumVystavenia: f.datumVystavenia,
+  datumSplatnosti: f.datumSplatnosti,
+  spolu: f.sucty?.spolu ?? 0,
+  zaplatena: Boolean(f.zaplatena),
+  datumZaplatenia: f.datumZaplatenia || '',
+});
+
+async function uloz(f, stare = []) {
+  const ulozene = await put(`${ROOT}${f.id}/${Date.now()}-${randomUUID()}.json`, JSON.stringify(f), {
+    access: 'public',
+    addRandomSuffix: false,
+    contentType: 'application/json',
+  });
+  const zastarane = stare.map((b) => b.url).filter((u) => u !== ulozene.url);
+  if (zastarane.length) await del(zastarane);
+}
+
+export async function GET(request) {
+  const denied = deny(request, ['admin']);
+  if (denied) return denied;
+  const id = new URL(request.url).searchParams.get('id');
+  try {
+    if (id) {
+      if (!ID.test(id)) return fail(400, 'Neplatné číslo faktúry.');
+      const blob = newest(await listAll(`${ROOT}${id}/`));
+      if (!blob) return fail(404, 'Faktúra sa nenašla.');
+      return json(await readJson(blob));
+    }
+    const skupiny = podlaCisla(await listAll(ROOT));
+    const faktury = await Promise.all(
+      [...skupiny.values()].map(async (blobs) => {
+        try {
+          return suhrn(await readJson(newest(blobs)));
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return json({ faktury: faktury.filter(Boolean).sort((a, b) => b.id.localeCompare(a.id)) });
+  } catch (e) {
+    console.error(e);
+    return fail(500, 'Faktúry sa nepodarilo načítať. Skontrolujte pripojenie Blob úložiska.');
+  }
+}
+
+export async function POST(request) {
+  const denied = deny(request, ['admin']);
+  if (denied) return denied;
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return fail(400, 'Faktúra neprišla celá.');
+  }
+  try {
+    let id = body?.id;
+    let stare = [];
+    let dod = null;
+    if (id) {
+      if (!ID.test(id)) return fail(400, 'Neplatné číslo faktúry.');
+      stare = await listAll(`${ROOT}${id}/`);
+      if (!stare.length) return fail(404, 'Faktúra už neexistuje.');
+      if (body.zaplatena) {
+        // zaplatená faktúra si drží údaje dodávateľa z čias vystavenia
+        dod = (await readJson(newest(stare)).catch(() => null))?.dodavatel || null;
+      }
+    } else {
+      const rok = new Date().getFullYear();
+      const cisla = [...podlaCisla(await listAll(`${ROOT}${rok}`)).keys()]
+        .filter((k) => k.startsWith(String(rok)))
+        .map((k) => Number(k.slice(4)));
+      id = `${rok}${String((cisla.length ? Math.max(...cisla) : 0) + 1).padStart(3, '0')}`;
+    }
+    const { firma } = await loadSettings();
+    if (!dod) dod = dodavatel(firma);
+    const faktura = clean(body, id, dod, Math.round(num(firma.splatnostDni, 14)));
+    await uloz(faktura, stare);
+    return json(faktura, body?.id ? 200 : 201);
+  } catch (e) {
+    console.error(e);
+    return fail(500, 'Faktúru sa nepodarilo uložiť.');
+  }
+}
+
+export async function PUT(request) {
+  const denied = deny(request, ['admin']);
+  if (denied) return denied;
+  const id = new URL(request.url).searchParams.get('id') || '';
+  if (!ID.test(id)) return fail(400, 'Neplatné číslo faktúry.');
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return fail(400, 'Údaje neprišli celé.');
+  }
+  try {
+    const stare = await listAll(`${ROOT}${id}/`);
+    if (!stare.length) return fail(404, 'Faktúra už neexistuje.');
+    const f = await readJson(newest(stare));
+    f.zaplatena = Boolean(body?.zaplatena);
+    f.datumZaplatenia = f.zaplatena ? (DATUM.test(body?.datumZaplatenia) ? body.datumZaplatenia : dnes()) : '';
+    f.upravene = new Date().toISOString();
+    await uloz(f, stare);
+    return json(f);
+  } catch (e) {
+    console.error(e);
+    return fail(500, 'Stav platby sa nepodarilo uložiť.');
+  }
+}
+
+export async function DELETE(request) {
+  const denied = deny(request, ['admin']);
+  if (denied) return denied;
+  const id = new URL(request.url).searchParams.get('id') || '';
+  if (!ID.test(id)) return fail(400, 'Neplatné číslo faktúry.');
+  try {
+    const n = await removeFolder(`${ROOT}${id}/`);
+    if (!n) return fail(404, 'Faktúra už neexistuje.');
+    return json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return fail(500, 'Faktúru sa nepodarilo zmazať.');
+  }
+}

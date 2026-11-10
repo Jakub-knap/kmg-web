@@ -34,7 +34,7 @@
     <div class="instal-pas" data-instal-pas hidden>
       <div class="obal">
         <img src="/assets/img/icon-192.png" alt="" width="44" height="44">
-        <p><strong>Aplikácia KMG</strong><span>Fotky a ponuky priamo z plochy telefónu.</span></p>
+        <p><strong>Aplikácia KMG</strong><span>Fotky, ponuky a faktúry priamo z plochy telefónu.</span></p>
         <button type="button" class="tlacidlo tlacidlo--male" data-instalovat>Inštalovať</button>
         <button type="button" class="instal-pas__zavriet" aria-label="Skryť ponuku inštalácie" data-instal-zavriet>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -64,6 +64,10 @@
         <a href="#ponuky" data-karta="ponuky" data-len-admin>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h7M9 16h7M9 8h3" stroke="currentColor" stroke-width="2"/></svg>
           Ponuky
+        </a>
+        <a href="#faktury" data-karta="faktury" data-len-admin>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="2"/></svg>
+          Faktúry
         </a>
       </nav>
 
@@ -179,6 +183,7 @@
           </fieldset>
 
           <div class="dalsie-akcie">
+            <button type="button" class="tlacidlo" data-vystavit-fakturu hidden>Vystaviť faktúru</button>
             <button type="button" class="tlacidlo tlacidlo--obrys" data-duplikovat>Duplikovať ponuku</button>
             <button type="button" class="tlacidlo tlacidlo--zmazat" data-zmazat-ponuku>Zmazať ponuku</button>
           </div>
@@ -190,6 +195,105 @@
               Stiahnuť PDF
             </button>
             <button type="button" class="tlacidlo tlacidlo--obrys" data-poslat hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" stroke="currentColor" stroke-width="2"/></svg>
+              Poslať
+            </button>
+          </div>
+        </form>
+      </main>
+
+      <!-- FAKTÚRY: zoznam -->
+      <main class="obal panel" data-panel="faktury" hidden>
+        <div data-faktury-zoznam>
+          <div class="riadok-nadpis">
+            <h1>Faktúry</h1>
+            <button type="button" class="tlacidlo tlacidlo--obrys" data-nova-faktura>Prázdna faktúra</button>
+          </div>
+          <div class="varovanie" data-faktury-varovanie hidden></div>
+
+          <section class="fakt-sekcia">
+            <h2>Na vystavenie <span class="pocitadlo" data-pocet="vystavenie"></span></h2>
+            <p class="napoveda">Prijaté ponuky, z ktorých ešte nie je faktúra. Ponuka sa sem dostane, keď jej v Ponukách nastavíte stav „prijatá“.</p>
+            <ul class="zoznam-faktur" data-na-vystavenie></ul>
+          </section>
+
+          <section class="fakt-sekcia">
+            <h2>Nezaplatené <span class="pocitadlo" data-pocet="nezaplatene"></span></h2>
+            <ul class="zoznam-faktur" data-nezaplatene></ul>
+          </section>
+
+          <details class="fakt-sekcia archiv" data-archiv>
+            <summary><h2>Archív – zaplatené <span class="pocitadlo" data-pocet="zaplatene"></span></h2></summary>
+            <ul class="zoznam-faktur" data-zaplatene></ul>
+          </details>
+        </div>
+
+        <!-- FAKTÚRA: úprava -->
+        <form class="ponuka faktura" data-faktura-editor hidden novalidate>
+          <button type="button" class="spat" data-faktura-spat>Späť na faktúry</button>
+          <div class="faktura__hlavicka">
+            <h1 data-faktura-nadpis>Nová faktúra</h1>
+            <span class="stav-platby" data-stav-platby hidden></span>
+          </div>
+          <p class="napoveda" data-faktura-info></p>
+
+          <fieldset class="skupina">
+            <legend>Odberateľ</legend>
+            <div class="polia">
+              <label class="cela">Meno alebo firma<input name="odberatel.meno" autocomplete="off"></label>
+              <label class="cela">Adresa<input name="odberatel.adresa" autocomplete="off"></label>
+              <label>IČO<input name="odberatel.ico" autocomplete="off" placeholder="len ak je to firma"></label>
+              <label>DIČ<input name="odberatel.dic" autocomplete="off"></label>
+              <label>IČ DPH<input name="odberatel.icdph" autocomplete="off"></label>
+              <label>E-mail<input name="odberatel.email" type="email" autocomplete="off"></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="skupina">
+            <legend>Faktúra</legend>
+            <div class="polia">
+              <label class="cela">Predmet<input name="predmet" placeholder="napr. Rekonštrukcia strechy rodinného domu"></label>
+              <label>Dátum vystavenia<input name="datumVystavenia" type="date"></label>
+              <label>Dátum dodania<input name="datumDodania" type="date"></label>
+              <label>Splatná do<input name="datumSplatnosti" type="date"></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="skupina">
+            <legend>Položky</legend>
+            <div class="polozky-hlavicka" aria-hidden="true"><span>Popis</span><span>Množstvo</span><span>MJ</span><span>Cena za MJ</span><span>Spolu</span><span></span></div>
+            <ol class="polozky" data-f-polozky></ol>
+            <p class="prazdne-polozky" data-f-bez-poloziek>Zatiaľ žiadne položky.</p>
+            <button type="button" class="tlacidlo tlacidlo--obrys" data-f-pridat>Pridať položku</button>
+          </fieldset>
+
+          <fieldset class="skupina">
+            <legend>Cena</legend>
+            <div class="polia">
+              <label>Zľava (%)<input name="zlava" inputmode="decimal"></label>
+              <label class="zaskrtavatko"><input name="platcaDph" type="checkbox"> Pripočítať DPH</label>
+              <label data-f-sadzba>Sadzba DPH (%)<input name="sadzbaDph" inputmode="decimal"></label>
+            </div>
+            <dl class="sucty" data-f-sucty></dl>
+          </fieldset>
+
+          <fieldset class="skupina">
+            <legend>Poznámka na faktúre</legend>
+            <textarea name="poznamka" rows="3" placeholder="napr. Ďakujeme za objednávku."></textarea>
+          </fieldset>
+
+          <div class="dalsie-akcie">
+            <button type="button" class="tlacidlo tlacidlo--zaplatena" data-f-zaplatena hidden>Označiť ako zaplatenú</button>
+            <button type="button" class="tlacidlo tlacidlo--zmazat" data-f-zmazat hidden>Zmazať faktúru</button>
+          </div>
+
+          <div class="lista-akcii">
+            <button type="submit" class="tlacidlo" data-f-ulozit>Vystaviť</button>
+            <button type="button" class="tlacidlo tlacidlo--obrys" data-f-stiahnut>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Stiahnuť PDF
+            </button>
+            <button type="button" class="tlacidlo tlacidlo--obrys" data-f-poslat hidden>
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" stroke="currentColor" stroke-width="2"/></svg>
               Poslať
             </button>
@@ -219,7 +323,7 @@
       <!-- FIRMA -->
       <main class="obal panel" data-panel="firma" hidden>
         <a class="spat" href="#ponuky">Späť na ponuky</a>
-        <h1>Údaje na ponuke</h1>
+        <h1>Údaje na ponuke a faktúre</h1>
         <p class="napoveda">Tlačia sa na cenových ponukách a zobrazujú sa aj na webe (kontakt a päta stránky). Na webe sa zmena prejaví do 2 minút.</p>
         <p class="varovanie" data-vymyslene hidden>IČO, DIČ alebo adresa sú zatiaľ vymyslené. Na ponukách sa tlačia, na webe sa nezobrazia, kým ich neprepíšete.</p>
         <form data-firma novalidate>
@@ -229,7 +333,7 @@
             <label>IČO<input name="ico"></label>
             <label>DIČ<input name="dic"></label>
             <label>IČ DPH<input name="icdph" placeholder="len ak ste platcom DPH"></label>
-            <label>IBAN<input name="iban"></label>
+            <label>IBAN<input name="iban" placeholder="potrebný pre QR platbu na faktúre"></label>
             <label>Telefón<input name="telefon" placeholder="viac čísel oddeľte čiarkou"></label>
             <label>E-mail<input name="email" type="email"></label>
             <label>Web<input name="web"></label>
@@ -238,6 +342,12 @@
             <label class="zaskrtavatko"><input name="platcaDph" type="checkbox"> Sme platcami DPH</label>
             <label>Sadzba DPH (%)<input name="sadzbaDph" inputmode="decimal"></label>
             <label class="cela">Text pod ponukou<textarea name="pata" rows="3"></textarea></label>
+            <h2 class="cela podnadpis">Na faktúre</h2>
+            <p class="cela napoveda">Faktúru vystavuje živnostník, preto musí byť na nej jeho obchodné meno a zápis v živnostenskom registri (nájdete ich na výpise zo živnostenského registra).</p>
+            <label class="cela">Obchodné meno<input name="obchodneMeno" placeholder="napr. Ján Novák – KMG stav"></label>
+            <label class="cela">Zápis v registri<input name="register" placeholder="napr. Zapísaný v Živnostenskom registri OÚ Žilina, č. 580-12345"></label>
+            <label>SWIFT / BIC<input name="swift" placeholder="nepovinné"></label>
+            <label>Splatnosť faktúr (dni)<input name="splatnostDni" inputmode="numeric"></label>
           </div>
           <div class="lista-akcii"><button type="submit" class="tlacidlo">Uložiť údaje</button></div>
         </form>
@@ -281,6 +391,7 @@
   <!-- Tlačová verzia ponuky -->
   <article id="tlac" aria-hidden="true"></article>
 
+  <script src="/assets/js/qr-platba.js" defer></script>
   <script src="/assets/js/pdf-ponuka.js" defer></script>
   <script src="/assets/js/admin.js" defer></script>
 </body>

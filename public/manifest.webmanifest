@@ -2,7 +2,7 @@
   "id": "/admin",
   "name": "KMG stav – správa",
   "short_name": "KMG",
-  "description": "Fotky do galérie a cenové ponuky KMG stav",
+  "description": "Fotky do galérie, cenové ponuky a faktúry KMG stav",
   "lang": "sk",
   "start_url": "/admin",
   "scope": "/",
@@ -17,6 +17,7 @@
   ],
   "shortcuts": [
     { "name": "Pridať fotky", "short_name": "Fotky", "url": "/admin#fotky", "icons": [{ "src": "/assets/img/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Nová cenová ponuka", "short_name": "Nová ponuka", "url": "/admin?nova=1#ponuky", "icons": [{ "src": "/assets/img/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Nová cenová ponuka", "short_name": "Nová ponuka", "url": "/admin?nova=1#ponuky", "icons": [{ "src": "/assets/img/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Faktúry", "short_name": "Faktúry", "url": "/admin#faktury", "icons": [{ "src": "/assets/img/icon-192.png", "sizes": "192x192" }] }
   ]
 }

@@ -1,7 +1,7 @@
 // KMG stav – service worker pre aplikáciu správy webu.
 // Stránky a súbory berie vždy najprv z internetu, bez pripojenia použije poslednú uloženú kópiu.
 // API (fotky, ponuky, prihlásenie) sa nikdy neukladá.
-const CACHE = 'kmg-v12';
+const CACHE = 'kmg-v13';
 const ZAKLAD = [
   '/admin',
   '/assets/css/site.css',
@@ -11,6 +11,7 @@ const ZAKLAD = [
   '/assets/img/icon-192.png',
   '/assets/img/favicon.png',
   '/assets/js/pdf-ponuka.js',
+  '/assets/js/qr-platba.js',
   '/assets/vendor/pdf-lib.min.js',
   '/assets/pdf/kmg-pismo-regular.ttf',
   '/assets/pdf/kmg-pismo-bold.ttf',

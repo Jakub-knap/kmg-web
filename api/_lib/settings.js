@@ -94,7 +94,7 @@ export function clean(input) {
   const firma = {};
   for (const k of Object.keys(DEFAULT_SETTINGS.firma)) {
     if (k === 'platcaDph') firma[k] = Boolean(f[k]);
-    else if (k === 'sadzbaDph' || k === 'platnostDni') firma[k] = Math.max(0, num(f[k], DEFAULT_SETTINGS.firma[k]));
+    else if (k === 'sadzbaDph' || k === 'platnostDni' || k === 'splatnostDni') firma[k] = Math.max(0, Math.min(365, num(f[k], DEFAULT_SETTINGS.firma[k])));
     else firma[k] = text(f[k], k === 'pata' ? 1000 : 300);
   }
   const cenniky = zostavCenniky(input);
