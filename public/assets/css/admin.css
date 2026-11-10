@@ -256,6 +256,11 @@ a.spat { display: inline-block; }
   .polozky .spolu small { display: none; }
 }
 .prazdne-polozky { color: var(--bridlica); margin: 0 0 1rem; }
+.pridat { display: grid; gap: .5rem; }
+.pridat__nadpis { font-size: .85rem; font-weight: 600; color: var(--bridlica); }
+.pridat__zoznamy { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .5rem; }
+.pridat__zoznamy .tlacidlo { padding-inline: .9rem; }
+.pridat__zoznamy svg { width: 1.2rem; height: 1.2rem; flex: none; }
 
 .sucty { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 0; margin: 1.5rem 0 0; max-width: 26rem; margin-left: auto; }
 .sucty dt { color: var(--bridlica); }
@@ -296,6 +301,9 @@ a.spat { display: inline-block; }
 .vyber { border: 0; padding: 0; width: min(36rem, 100vw); max-width: 100vw; height: min(44rem, 100dvh); max-height: 100dvh; background: var(--kamen); }
 .vyber::backdrop { background: rgba(30, 30, 28, 0.6); }
 .vyber[open] { display: flex; flex-direction: column; }
+/* hlavička, karty a hľadanie si držia výšku, rolovať sa má len zoznam */
+.vyber__hore, .vyber__karty, .vyber .hladat { flex: none; }
+.vyber__zoznam { flex: 1 1 auto; min-height: 0; }
 .vyber__hore { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--biela); }
 .vyber__hore h2 { margin: 0; font-size: 1.5rem; }
 .vyber .hladat { margin: 0.75rem 1rem; width: calc(100% - 2rem) !important; }

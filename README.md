@@ -74,8 +74,9 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   Pri nahrávaní sa fotky dajú voliteľne označiť **Pred realizáciou** / **Po realizácii** (aj neskôr ťuknutím
   na štítok pri fotke). Ak má zákazka fotky pred aj po, web ukáže interaktívne porovnanie s posuvnou čiarou –
   v albume zákazky aj v sekcii **Pred a po** na úvodnej stránke.
-- **Ponuky:** Nová ponuka → zákazník → **Výmery** (plocha v m², dĺžka v bm, atika v bm) → Pridať z cenníka
-  (alebo vlastnú položku) → Uložiť. Výmery sa samé doplnia ako množstvo ku všetkým položkám v m² a bm;
+- **Ponuky:** Nová ponuka → zákazník → **Výmery** (plocha v m², dĺžka v bm, atika v bm) → v časti Položky
+  „Pridať položky z:“ ťuknite **Cenník** (materiál a práce podľa cenníka), potom **Cena práce** (prípadne vlastnú
+  kategóriu alebo vlastnú položku) → Uložiť. Výmery sa samé doplnia ako množstvo ku všetkým položkám v m² a bm;
   pri položke sa dajú ručne zmeniť (napr. fólia s presahom) a ručne zmenené sa potom neprepisujú.
   Položky atiky v bm (oplechovanie, podkladová konštrukcia, demontáž) berú výmeru **Atika**, ostatné bm berú **Dĺžku**.
   **Stiahnuť PDF** uloží hotový súbor do telefónu (napr. `Cenova-ponuka-2026-001-Jan-Novak.pdf`).
@@ -83,8 +84,8 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   Čísla ponúk idú za sebou podľa roka: 2026-001, 2026-002…
 - **Cenník, Cena práce a vlastné kategórie** (tlačidlá hore v Ponukách): každá je samostatný zoznam položiek
   s jednotkami a cenami bez DPH. **+ Nová kategória** vytvorí ďalší zoznam (napr. Materiál, Doprava, Lešenie),
-  ktorý sa dá premenovať aj zmazať; Cenník a Cena práce sa zmazať nedajú. V ponuke sa položky pridávajú
-  cez **Pridať z cenníka** (karty podľa kategórií, hľadanie vo všetkých). Ak sú v ponuke položky z viacerých
+  ktorý sa dá premenovať aj zmazať; Cenník a Cena práce sa zmazať nedajú. V ponuke má každý zoznam
+  vlastné tlačidlo (Cenník, Cena práce, …); v okne výberu sa dá prepínať kartami hore a hľadať vo všetkých. Ak sú v ponuke položky z viacerých
   kategórií, editor aj PDF ich zoskupia a ukážu súčet za každú kategóriu zvlášť (napr. Cenník, Cena práce).
   V ponuke sa cena dá vždy zmeniť.
   Atiky sa účtujú v bm podľa rozvinutej šírky plechu (r.š. do 330 / do 500 / nad 500 mm).

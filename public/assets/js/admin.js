@@ -603,6 +603,7 @@
   };
 
   function vykresliPodmenu() {
+    vykresliPridavanie();
     const nav = $('[data-podmenu]');
     nav.replaceChildren();
     for (const z of zoznamy()) {
@@ -1161,13 +1162,28 @@
       box.innerHTML = `<p class="prazdne-admin">${prazdny}</p>`;
     }
   }
-  $('[data-z-cennika]').addEventListener('click', () => {
+  function otvorVyber(id) {
     pridaneVyberom = 0;
     $('[data-vyber-hladat]').value = '';
-    if (!zoznamy().some((z) => z.id === vyberZoznam)) vyberZoznam = 'cennik';
+    vyberZoznam = zoznamy().some((z) => z.id === id) ? id : 'cennik';
     vykresliVyber();
     vyber.showModal();
-  });
+  }
+  // V ponuke jedno tlačidlo na každý zoznam: Cenník, Cena práce, vlastné kategórie
+  function vykresliPridavanie() {
+    const box = $('[data-pridat-zoznamy]');
+    box.replaceChildren(...zoznamy().map((z) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tlacidlo';
+      b.dataset.zCennika = z.id;
+      b.innerHTML = `${IKONY_ZOZNAMOV[z.id] || IKONY_ZOZNAMOV.vlastny}<span></span>`;
+      $('span', b).textContent = z.nazov;
+      b.addEventListener('click', () => otvorVyber(z.id));
+      return b;
+    }));
+  }
+  $('[data-z-cennika]').addEventListener('click', () => otvorVyber('cennik'));
   $('[data-vyber-hladat]').addEventListener('input', vykresliVyber);
   $('[data-vyber-hotovo]').addEventListener('click', () => vyber.close());
   vyber.addEventListener('close', () => {

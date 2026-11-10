@@ -153,9 +153,12 @@
             <legend>Položky</legend>
             <div class="polozky-hlavicka" aria-hidden="true"><span>Popis</span><span>Množstvo</span><span>MJ</span><span>Cena za MJ</span><span>Spolu</span><span></span></div>
             <ol class="polozky" data-polozky></ol>
-            <p class="prazdne-polozky" data-bez-poloziek>Zatiaľ žiadne položky. Pridajte ich z cenníka alebo vlastnú.</p>
-            <div class="akcie">
-              <button type="button" class="tlacidlo" data-z-cennika>Pridať z cenníka</button>
+            <p class="prazdne-polozky" data-bez-poloziek>Zatiaľ žiadne položky. Pridajte ich tlačidlami nižšie – napríklad najprv z Cenníka a potom z Ceny práce.</p>
+            <div class="pridat">
+              <span class="pridat__nadpis">Pridať položky z:</span>
+              <div class="pridat__zoznamy" data-pridat-zoznamy>
+                <button type="button" class="tlacidlo" data-z-cennika="cennik">Cenník</button>
+              </div>
               <button type="button" class="tlacidlo tlacidlo--obrys" data-vlastna>Pridať vlastnú položku</button>
             </div>
           </fieldset>
