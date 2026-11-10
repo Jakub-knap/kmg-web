@@ -10,10 +10,9 @@
 import { randomUUID } from 'node:crypto';
 import { deny, fail, json } from './_lib/auth.js';
 import { loadSettings } from './_lib/settings.js';
+import { fakturyPodlaCisla as podlaCisla, ID_FAKTURY as ID, ROOT_FAKTURY as ROOT, zoznamFaktur } from './_lib/doklady.js';
 import { del, listAll, newest, put, readJson, removeFolder } from './_lib/store.js';
 
-const ROOT = 'faktury/';
-const ID = /^\d{7,8}$/;
 const PONUKA = /^\d{4}-\d{3,4}$/;
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -29,17 +28,6 @@ const pridajDni = (iso, dni) => {
   d.setUTCDate(d.getUTCDate() + dni);
   return d.toISOString().slice(0, 10);
 };
-
-function podlaCisla(blobs) {
-  const map = new Map();
-  for (const b of blobs) {
-    const id = b.pathname.slice(ROOT.length).split('/')[0];
-    if (!ID.test(id)) continue;
-    if (!map.has(id)) map.set(id, []);
-    map.get(id).push(b);
-  }
-  return map;
-}
 
 function spocitaj(f) {
   const medzisucet = r2(f.polozky.reduce((s, x) => s + r2(x.mnozstvo * x.cena), 0));
@@ -101,18 +89,6 @@ function clean(input, id, dod, splatnostDni = 14) {
   return f;
 }
 
-const suhrn = (f) => ({
-  id: f.id,
-  ponuka: f.ponuka || '',
-  odberatel: f.odberatel?.meno || '',
-  predmet: f.predmet || '',
-  datumVystavenia: f.datumVystavenia,
-  datumSplatnosti: f.datumSplatnosti,
-  spolu: f.sucty?.spolu ?? 0,
-  zaplatena: Boolean(f.zaplatena),
-  datumZaplatenia: f.datumZaplatenia || '',
-});
-
 async function uloz(f, stare = []) {
   const ulozene = await put(`${ROOT}${f.id}/${Date.now()}-${randomUUID()}.json`, JSON.stringify(f), {
     access: 'public',
@@ -134,17 +110,8 @@ export async function GET(request) {
       if (!blob) return fail(404, 'Faktúra sa nenašla.');
       return json(await readJson(blob));
     }
-    const skupiny = podlaCisla(await listAll(ROOT));
-    const faktury = await Promise.all(
-      [...skupiny.values()].map(async (blobs) => {
-        try {
-          return suhrn(await readJson(newest(blobs)));
-        } catch {
-          return null;
-        }
-      }),
-    );
-    return json({ faktury: faktury.filter(Boolean).sort((a, b) => b.id.localeCompare(a.id)) });
+    const faktury = await zoznamFaktur(await listAll(ROOT));
+    return json({ faktury });
   } catch (e) {
     console.error(e);
     return fail(500, 'Faktúry sa nepodarilo načítať. Skontrolujte pripojenie Blob úložiska.');

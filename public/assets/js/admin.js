@@ -85,7 +85,7 @@
     let data = null;
     try { data = await res.json(); } catch { /* prázdna odpoveď */ }
     if (res.status === 401 && path !== '/api/login') ukazPrihlasenie('Prihlásenie vypršalo. Prihláste sa znova.');
-    if (!res.ok) throw new Error(data?.chyba || `Server odpovedal chybou ${res.status}.`);
+    if (!res.ok) throw Object.assign(new Error(data?.chyba || `Server odpovedal chybou ${res.status}.`), { status: res.status });
     return data;
   }
 
@@ -156,19 +156,38 @@
     $$('[data-len-admin]').forEach((a) => { a.hidden = !admin; });
     $('.karty').style.setProperty('--pocet', admin ? 3 : 1);
     ukazKartu();
-    nacitajFotky();
-    if (admin) {
-      nacitajNastavenia().then(() => {
-        const url = new URL(location.href);
-        if (url.searchParams.has('nova')) {
-          url.searchParams.delete('nova');
-          history.replaceState(null, '', url);
-          $('[data-nova-ponuka]').click();
-        }
-      });
-      nacitajPonuky();
-      nacitajFaktury();
+    nacitajVsetko().then(() => {
+      if (!admin || !stav.nastavenia) return;
+      const url = new URL(location.href);
+      if (url.searchParams.has('nova')) {
+        url.searchParams.delete('nova');
+        history.replaceState(null, '', url);
+        $('[data-nova-ponuka]').click();
+      }
+    });
+  }
+
+  // Pri otvorení aplikácie všetko naraz – server vypíše úložisko len raz (šetrí operácie úložiska).
+  async function nacitajVsetko() {
+    let d = null;
+    try {
+      d = await api(`/api/sprava?t=${Date.now()}`);
+    } catch (e) {
+      oznam(e.message, true);
     }
+    if (d?.galeria) stav.galeria = { zakazky: d.galeria.zakazky || [], ine: d.galeria.ine || [], max: d.galeria.max || 10 };
+    vykresliZakazky();
+    if (stav.rola !== 'admin' || !d) return;
+    if (d.nastavenia) {
+      stav.nastavenia = d.nastavenia;
+      vykresliPodmenu();
+      vykresliCennik();
+      vyplnFirmu();
+    }
+    stav.ponuky = d.ponuky || [];
+    stav.faktury = d.faktury || [];
+    vykresliZoznam();
+    vykresliFaktury();
   }
 
   // ---------- Karty ----------
@@ -219,15 +238,6 @@
   const datumZ = (ms) => new Date(ms).toLocaleDateString('sk-SK');
   const IKONA_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
-  async function nacitajFotky() {
-    try {
-      const d = await api(`/api/zakazky?t=${Date.now()}`);
-      stav.galeria = { zakazky: d.zakazky || [], ine: d.ine || [], max: d.max || 10 };
-    } catch (e) {
-      oznam(e.message, true);
-    }
-    vykresliZakazky();
-  }
 
   function aktualizujVarovanie() {
     const { zakazky, max } = stav.galeria;
@@ -510,7 +520,7 @@
     });
   }
 
-  async function nahraj(file, z, li, el, oznacenie = '') {
+  async function nahraj(file, z, li, el, oznacenie = '', prvy = false) {
     const stavText = $('.stav', li);
     const pruh = $('progress', li);
     const img = $('img', li);
@@ -536,7 +546,9 @@
       const form = new FormData();
       form.append('foto', foto, 'foto.jpg');
       if (nahlad) form.append('nahlad', nahlad, 'nahlad.jpg');
-      const data = await odosli(`/api/photos?zakazka=${encodeURIComponent(z.id)}${oznacenie ? `&oznacenie=${oznacenie}` : ''}`, form, (p) => { pruh.value = p; });
+      // označenie pred/po sa uloží raz za celú dávku (nahrajDoZakazky), nie pri každej fotke
+      const data = await odosli(`/api/photos?zakazka=${encodeURIComponent(z.id)}${prvy ? '&prvy=1' : ''}`, form, (p) => { pruh.value = p; });
+      if (oznacenie) data.foto.oznacenie = oznacenie;
       z.fotky.push(data.foto);
       obnovKartu(el, z);
       pruh.hidden = true;
@@ -563,32 +575,36 @@
       return li;
     });
     let ok = 0;
+    const nove = [];
     for (let i = 0; i < subory.length; i += 1) {
-      if (await nahraj(subory[i], z, polozky[i], el, oznacenie)) ok += 1;
+      const pred = z.fotky.length;
+      if (await nahraj(subory[i], z, polozky[i], el, oznacenie, i === 0)) {
+        ok += 1;
+        nove.push(...z.fotky.slice(pred));
+      }
     }
     if (ok) {
       oznam(`Pridané do zákazky: ${pocetFotiek(ok)}`);
-      // web sa obnoví raz za celú dávku (šetrí operácie úložiska)
+      // označenia a web sa uložia raz za celú dávku (šetrí operácie úložiska)
+      const oznacenia = oznacenie ? Object.fromEntries(nove.map((f) => [f.id.split('/')[1], oznacenie])) : undefined;
       try {
-        await api('/api/verejne', { method: 'POST' });
-      } catch {
-        oznam('Fotky sú uložené, ale web sa neobnovil. Obnoví sa pri ďalšej zmene v aplikácii.', true);
+        await api('/api/verejne', { method: 'POST', body: { zakazka: z.id, oznacenia } });
+      } catch (e) {
+        if (e.status === 404) {
+          oznam(e.message, true); // zákazku medzitým niekto zmazal
+        } else if (oznacenie) {
+          nove.forEach((f) => { delete f.oznacenie; });
+          obnovKartu(el, z);
+          oznam('Fotky sú nahraté, ale označenie sa neuložilo. Označte ich ťuknutím na štítok pri fotke.', true);
+        } else {
+          oznam('Fotky sú uložené, ale web sa neobnovil. Obnoví sa pri ďalšej zmene v aplikácii.', true);
+        }
       }
     }
     aktualizujVarovanie();
   }
 
   // ---------- Nastavenia (cenník + firma) ----------
-  async function nacitajNastavenia() {
-    try {
-      stav.nastavenia = await api('/api/settings');
-      vykresliPodmenu();
-      vykresliCennik();
-      vyplnFirmu();
-    } catch (e) {
-      oznam(e.message, true);
-    }
-  }
 
   // verejne = true: zmena sa týka aj webu (údaje o firme, limit zákaziek), server ho obnoví
   async function ulozNastavenia(verejne = false) {
@@ -929,15 +945,6 @@
   const zoznamBox = $('[data-ponuky-zoznam]');
   const editor = $('[data-ponuka-editor]');
 
-  async function nacitajPonuky() {
-    try {
-      stav.ponuky = (await api('/api/offers')).ponuky || [];
-    } catch (e) {
-      oznam(e.message, true);
-    }
-    vykresliZoznam();
-    vykresliFaktury();
-  }
 
   function vykresliZoznam() {
     const hladat = $('[data-hladat-ponuku]').value.trim().toLowerCase();
@@ -1488,15 +1495,6 @@
     btn.textContent = f ? `Otvoriť faktúru ${f.id}` : 'Vystaviť faktúru';
   }
 
-  async function nacitajFaktury() {
-    try {
-      stav.faktury = (await api('/api/faktury')).faktury || [];
-    } catch (e) {
-      oznam(e.message, true);
-    }
-    vykresliFaktury();
-    vykresliZoznam();
-  }
 
   function chybajuceUdaje() {
     const f = stav.nastavenia?.firma;

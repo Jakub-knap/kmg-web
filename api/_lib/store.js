@@ -23,12 +23,24 @@ export async function readJson(blob) {
   return res.json();
 }
 
+/** Súbory s daným začiatkom cesty z hotového výpisu – bez ďalšej operácie úložiska. */
+export const vPriecinku = (vsetky, prefix) => vsetky.filter((b) => b.pathname.startsWith(prefix));
+
+/** Výpis po zápise: staré verzie preč, nová pridaná. Ušetrí ďalší výpis (list = platená operácia). */
+export function poZapise(vsetky, stare = [], ulozeny = null) {
+  const prec = new Set(stare.map((b) => b.url));
+  const out = vsetky.filter((b) => !prec.has(b.url));
+  if (ulozeny) out.push({ url: ulozeny.url, pathname: ulozeny.pathname, uploadedAt: new Date().toISOString() });
+  return out;
+}
+
 /**
  * Uloží JSON do priečinka ako novú verziu s náhodným menom a staré verzie zmaže.
  * Každá verzia má vlastnú adresu, takže sa nikdy nenačíta stará kópia z cache.
+ * `stare` = staré verzie z hotového výpisu (ušetrí operáciu list).
  */
-export async function writeJsonVersion(folder, data) {
-  const old = await listAll(folder);
+export async function writeJsonVersion(folder, data, stare) {
+  const old = stare ?? (await listAll(folder));
   const saved = await put(`${folder}${Date.now()}-${randomUUID()}.json`, JSON.stringify(data), {
     access: 'public',
     addRandomSuffix: false,

@@ -6,13 +6,16 @@
 //                                       alebo { foto: <fid>, oznacenie: 'pred' | 'po' | '' } – označenie fotky
 //   DELETE /api/zakazky?id=<zid>     – zmazanie zákazky aj s fotkami
 import { deny, fail, getRole, json } from './_lib/auth.js';
-import { cistiZakazku, FID, nacitajZakazku, nastavOznacenie, noveId, orezNaLimit, ulozZakazku, zmazZakazku, ZID } from './_lib/galeria.js';
+// Každá zmena vypíše úložisko len raz (list = platená operácia) a ten istý výpis použije
+// aj na obnovenie verejného súboru webu.
+import { cistiZakazku, FID, metaZakazky, nastavOznacenia, noveId, orezNaLimit, ulozZakazku, zmazZakazku, ZID } from './_lib/galeria.js';
 import { loadSettings } from './_lib/settings.js';
+import { listAll } from './_lib/store.js';
 import { VEREJNA_CACHE, nacitajNazivo, nacitajVerejne, skusObnovit } from './_lib/verejne.js';
 
-async function limitZakaziek() {
+async function limitZakaziek(vsetky) {
   try {
-    return (await loadSettings()).galeria.maxZakaziek;
+    return (await loadSettings(vsetky)).galeria.maxZakaziek;
   } catch {
     return 10;
   }
@@ -48,9 +51,11 @@ export async function POST(request) {
   try {
     const zid = noveId();
     const vytvorene = Date.now();
-    await ulozZakazku(zid, { ...data, vytvorene });
-    const zmazane = await orezNaLimit(await limitZakaziek());
-    await skusObnovit();
+    const vsetky = await listAll('');
+    const limit = await limitZakaziek(vsetky);
+    const poUlozeni = await ulozZakazku(zid, { ...data, vytvorene }, vsetky);
+    const { zmazane, vsetky: zvysok } = await orezNaLimit(limit, poUlozeni);
+    await skusObnovit(zvysok);
     return json({ zakazka: { id: zid, ...data, vytvorene, fotky: [] }, zmazane }, 201);
   } catch (e) {
     console.error(e);
@@ -72,17 +77,19 @@ export async function PUT(request) {
   try {
     if (body?.foto !== undefined) {
       if (!FID.test(String(body.foto))) return fail(400, 'Neplatná fotka.');
-      const oznacenia = await nastavOznacenie(zid, String(body.foto), body.oznacenie);
-      if (!oznacenia) return fail(404, 'Zákazka už neexistuje.');
-      await skusObnovit();
-      return json({ foto: body.foto, oznacenie: oznacenia[body.foto] || null });
+      const fid = String(body.foto);
+      const vysledok = await nastavOznacenia(zid, { [fid]: body.oznacenie }, await listAll(''));
+      if (!vysledok) return fail(404, 'Zákazka už neexistuje.');
+      await skusObnovit(vysledok.vsetky);
+      return json({ foto: fid, oznacenie: vysledok.oznacenia[fid] || null });
     }
-    const povodna = await nacitajZakazku(zid);
-    if (!povodna) return fail(404, 'Zákazka už neexistuje.');
+    const vsetky = await listAll('');
+    const meta = await metaZakazky(zid, vsetky);
+    if (!meta) return fail(404, 'Zákazka už neexistuje.');
+    const povodna = meta.data;
     const data = cistiZakazku(body, povodna);
     if (!data.nazov) return fail(400, 'Napíšte názov zákazky.');
-    await ulozZakazku(zid, { ...povodna, ...data, vytvorene: povodna.vytvorene });
-    await skusObnovit();
+    await skusObnovit(await ulozZakazku(zid, { ...povodna, ...data, vytvorene: povodna.vytvorene }, vsetky));
     return json({ zakazka: { id: zid, ...data, vytvorene: povodna.vytvorene } });
   } catch (e) {
     console.error(e);
@@ -96,9 +103,9 @@ export async function DELETE(request) {
   const zid = new URL(request.url).searchParams.get('id') || '';
   if (!ZID.test(zid)) return fail(400, 'Neplatná zákazka.');
   try {
-    const n = await zmazZakazku(zid);
-    if (!n) return fail(404, 'Zákazka už neexistuje.');
-    await skusObnovit();
+    const { pocet, vsetky } = await zmazZakazku(zid, await listAll(''));
+    if (!pocet) return fail(404, 'Zákazka už neexistuje.');
+    await skusObnovit(vsetky);
     return json({ ok: true });
   } catch (e) {
     console.error(e);

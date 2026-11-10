@@ -159,11 +159,17 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
 |---|---|---|
 | Miesto | 1 GB | fotka + náhľad ≈ 0,6 MB → asi 1 500 fotiek; 10 zákaziek po 30 fotkách ≈ 200 MB |
 | Prenos | 10 GB | stovky návštevníkov, ktorí si prezerajú veľké fotky |
-| Pokročilé operácie (nahratie, výpis súborov) | 2 000 | nahratie fotky = 2, uloženie ponuky/faktúry/zákazky/údajov ≈ 2–4, otvorenie aplikácie ≈ 4; **návštevy webu = 0** |
+| Pokročilé operácie (nahratie, výpis súborov) | 2 000 | fotka = 2 (+ 2–3 za celú dávku), otvorenie aplikácie = 1, otvorenie ponuky/faktúry = 1, uloženie ponuky = 2, faktúry = 3, zmena zákazky alebo označenie fotky = 3, mazanie = 1–2; **návštevy webu = 0** |
 | Jednoduché operácie (čítanie súboru mimo cache) | 10 000 | návšteva webu ≈ 1 |
 
-- **Po prekročení limitu Vercel úložisko na 30 dní zablokuje** (zmiznú fotky na webe aj ponuky v aplikácii).
-  Vercel predtým pošle e-mail. Na pláne Pro (20 $ mesačne) sa úložisko neblokuje, spotreba nad rámec sa doplatí
+- Limity sa počítajú za **posledných 30 dní** (kĺzavo), nie od začiatku mesiaca – operácia sa prestane rátať 30 dní po tom, ako sa stala.
+- **Po prekročení limitu Vercel úložisko na 30 dní zablokuje.** Web ostane online (texty, služby, kontakt),
+  ale zmiznú na ňom fotky a aplikácia nenačíta ani neuloží fotky, ponuky, faktúry, cenník ani údaje firmy.
+  Dáta sa nezmažú. Vercel predtým pošle e-mail pri 75 % a pri 100 %.
+- 10. 11. 2026 prišlo upozornenie na 75 % pokročilých operácií. Väčšinu spotrebovalo staré riešenie (web pri každej
+  návšteve vypisoval úložisko; fotka s označením pred/po stála 6 operácií, otvorenie aplikácie 4). Odvtedy každá akcia
+  vypisuje úložisko najviac raz – rovnaká práca stojí asi polovicu, fotky s označením tretinu.
+  Kým staré operácie nevypadnú z 30-dňového okna, nenahrávajte veľké dávky fotiek naraz. Na pláne Pro (20 $ mesačne) sa úložisko neblokuje, spotreba nad rámec sa doplatí
   (pri vašom objeme centy) a Pro je aj oficiálne určený na firemné použitie.
 - Web preto nečíta úložisko výpisom pri každej návšteve, ale jeden hotový súbor `verejne/web.json`,
   ktorý sa obnoví len pri zmene v aplikácii.
@@ -188,11 +194,16 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
 - Faktúry: `api/faktury.js` (GET zoznam/detail, POST uloženie a číslovanie RRRRNNN, PUT stav platby, DELETE).
   QR platba: `public/assets/js/qr-platba.js` – vlastný QR enkóder a PAY by square 1.2.0 (CRC32, LZMA1 lc=3 lp=0 pb=2
   len s literálmi a koncovou značkou, base32hex), bez externých knižníc; overené dekódovaním cez Python `lzma` a OpenCV.
+- Aplikácia pri otvorení volá len `GET /api/sprava` (galéria, nastavenia, ponuky, faktúry z jedného výpisu úložiska).
+  Každá zmena v API vypisuje úložisko najviac raz a ten istý výpis použije aj na obnovenie verejného súboru
+  (`vsetky` / `poZapise` v `api/_lib/store.js`). Fotky sa nahrávajú bez označenia; označenia pred/po celej dávky
+  a obnovenie webu uloží jedno `POST /api/verejne { zakazka, oznacenia }`. Ak zákazku medzitým niekto zmazal,
+  toto volanie fotky z dávky zmaže. Spotreba sa dá lokálne zmerať skriptom s falošným úložiskom (log operácií).
 - Verejný web volá len `GET /api/web` (zákazky, limit a údaje o firme bez IBAN a bez vymyslených hodnôt).
   Odpoveď sa číta zo súboru `verejne/web.json` (prepisuje sa, cache 60 s), nie výpisom úložiska.
   Súbor obnovujú zmeny zákaziek, označení a mazanie fotiek priamo na serveri, po dávke fotiek
   `POST /api/verejne` z aplikácie a uloženie údajov o firme alebo limitu (`PUT /api/settings?verejne=1`).
-  Aplikácia (prihlásený používateľ) dostáva z `GET /api/zakazky` čerstvý stav jedným výpisom celého úložiska.
+  Prihlásený používateľ dostáva z `GET /api/zakazky` čerstvý stav jedným výpisom celého úložiska.
   `GET /api/zakazky`, `/api/firma` a `/api/photos` bez prihlásenia vracajú tiež len dáta z verejného súboru.
 - `site.js` prepíše telefóny, e-mail, Facebook a pätu údajmi z aplikácie; v HTML ostávajú telefóny a e-mail ako záloha.
 - Prihlásenie: heslo sa porovnáva na serveri, prehliadač dostane podpísaný HttpOnly cookie na 180 dní.

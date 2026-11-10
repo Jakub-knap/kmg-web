@@ -4,7 +4,7 @@
 //                                  (údaje o firme, limit zákaziek; pri cenníku netreba)
 import { deny, fail, json } from './_lib/auth.js';
 import { clean, FOLDER, loadSettings } from './_lib/settings.js';
-import { writeJsonVersion } from './_lib/store.js';
+import { listAll, poZapise, vPriecinku, writeJsonVersion } from './_lib/store.js';
 import { skusObnovit } from './_lib/verejne.js';
 
 export async function GET(request) {
@@ -29,8 +29,15 @@ export async function PUT(request) {
   }
   try {
     const data = clean(body);
-    await writeJsonVersion(FOLDER, data);
-    if (new URL(request.url).searchParams.get('verejne') === '1') await skusObnovit();
+    if (new URL(request.url).searchParams.get('verejne') === '1') {
+      // jeden výpis úložiska poslúži na uloženie aj na obnovenie webu
+      const vsetky = await listAll('');
+      const stare = vPriecinku(vsetky, FOLDER);
+      const ulozeny = await writeJsonVersion(FOLDER, data, stare);
+      await skusObnovit(poZapise(vsetky, stare, ulozeny));
+    } else {
+      await writeJsonVersion(FOLDER, data);
+    }
     return json(data);
   } catch (e) {
     console.error(e);

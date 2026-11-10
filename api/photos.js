@@ -1,11 +1,14 @@
 // Fotky v zákazkách.
 //   GET    /api/photos                       – verejný zoznam všetkých fotiek (pre staršie verzie stránky)
-//   POST   /api/photos?zakazka=<zid>[&oznacenie=pred|po] – nahratie do zákazky (FormData: foto, nahlad);
-//                                               web sa obnoví až po celej dávke cez POST /api/verejne
+//   POST   /api/photos?zakazka=<zid>[&prvy=1] – nahratie do zákazky (FormData: foto, nahlad);
+//                                               prvy=1 (prvá fotka dávky) overí, či zákazka existuje.
+//                                               Označenie pred/po a obnovenie webu idú raz za celú dávku
+//                                               cez POST /api/verejne. (Starší parameter &oznacenie=
+//                                               ešte funguje, ale stojí 2 operácie navyše na fotku.)
 //   DELETE /api/photos?id=<zid>/<fid>        – zmazanie fotky (aj staršie <kategoria>/<fid>)
 import { deny, fail, json } from './_lib/auth.js';
-import { FID, KATEGORIE, nastavOznacenie, noveId, OZNACENIA, ZID } from './_lib/galeria.js';
-import { del, listAll, put } from './_lib/store.js';
+import { FID, KATEGORIE, nastavOznacenia, noveId, OZNACENIA, ZID } from './_lib/galeria.js';
+import { del, listAll, poZapise, put } from './_lib/store.js';
 import { VEREJNA_CACHE, nacitajVerejne, skusObnovit } from './_lib/verejne.js';
 
 const MAX_BYTES = 4 * 1024 * 1024; // Vercel funkcia prijme najviac 4,5 MB
@@ -32,7 +35,10 @@ export async function POST(request) {
   const zid = params.get('zakazka') || '';
   const oznacenie = OZNACENIA.includes(params.get('oznacenie')) ? params.get('oznacenie') : null;
   if (!ZID.test(zid)) return fail(400, 'Vyberte zákazku, do ktorej fotky patria.');
-  if (!(await listAll(`zakazky/${zid}/`)).length) return fail(404, 'Zákazka už neexistuje. Obnovte stránku.');
+  // Kontrola stojí operáciu list, preto len pri prvej fotke dávky (ostatné overí POST /api/verejne).
+  if (params.get('prvy') === '1' && !(await listAll(`zakazky/${zid}/`)).length) {
+    return fail(404, 'Zákazka už neexistuje. Obnovte stránku.');
+  }
 
   let form;
   try {
@@ -55,7 +61,7 @@ export async function POST(request) {
     if (nahlad && typeof nahlad !== 'string' && nahlad.size > 0 && nahlad.size < MAX_BYTES) {
       mala = await put(`nahlady/${zid}/${fid}.${ext}`, nahlad, { access: 'public', addRandomSuffix: false, contentType: nahlad.type || typ });
     }
-    if (oznacenie) await nastavOznacenie(zid, fid, oznacenie);
+    if (oznacenie) await nastavOznacenia(zid, { [fid]: oznacenie }, await listAll(`zakazky/${zid}/`));
     return json({ foto: { id: `${zid}/${fid}`, url: plna.url, nahlad: mala.url, cas: Number(fid.split('-')[0]), ...(oznacenie ? { oznacenie } : {}) } }, 201);
   } catch (e) {
     console.error(e);
@@ -71,10 +77,11 @@ export async function DELETE(request) {
   const platne = b && /^\d+-[a-z0-9]+$/.test(b) && (ZID.test(a) ? FID.test(b) : KATEGORIE.includes(a));
   if (!platne) return fail(400, 'Neplatná fotka.');
   try {
-    const najdene = [...(await listAll(`galeria/${a}/${b}.`)), ...(await listAll(`nahlady/${a}/${b}.`))];
+    const vsetky = await listAll('');
+    const najdene = vsetky.filter((x) => x.pathname.startsWith(`galeria/${a}/${b}.`) || x.pathname.startsWith(`nahlady/${a}/${b}.`));
     if (!najdene.length) return fail(404, 'Fotka už neexistuje.');
     await del(najdene.map((x) => x.url));
-    await skusObnovit();
+    await skusObnovit(poZapise(vsetky, najdene));
     return json({ ok: true });
   } catch (e) {
     console.error(e);

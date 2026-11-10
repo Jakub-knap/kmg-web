@@ -5,7 +5,7 @@
 //   nahlady/<zid>/<fid>.jpg       – zmenšenina
 // Staršie fotky bez zákazky (galeria/<kategoria>/<fid>.jpg) sa stále zobrazujú.
 import { randomUUID } from 'node:crypto';
-import { del, listAll, readJson, writeJsonVersion } from './store.js';
+import { del, listAll, newest, poZapise, readJson, vPriecinku, writeJsonVersion } from './store.js';
 
 export const KATEGORIE = ['strechy', 'atiky', 'chaty', 'pristresky', 'altanky', 'pergoly', 'drevodomy', 'interier'];
 export const OZNACENIA = ['pred', 'po']; // voliteľné označenie fotky: pred realizáciou / po realizácii
@@ -24,60 +24,72 @@ export function cistiZakazku(vstup, povodna = {}) {
   return { nazov, kategoria };
 }
 
+// Funkcie nižšie dostávajú hotový výpis úložiska (`vsetky`) a vracajú ho upravený po zmene.
+// Výpis (list) je platená „pokročilá operácia“ – každá akcia v aplikácii ho tak robí najviac raz.
+
 /** Id všetkých zákaziek (podľa uložených údajov), od najnovšej. */
-export async function idZakaziek() {
+export function idZakaziek(vsetky) {
   const ids = new Set();
-  for (const b of await listAll('zakazky/')) {
+  for (const b of vPriecinku(vsetky, 'zakazky/')) {
     const zid = b.pathname.split('/')[1];
     if (ZID.test(zid)) ids.add(zid);
   }
   return [...ids].sort((a, b) => casZ(b) - casZ(a));
 }
 
-export async function ulozZakazku(zid, data) {
-  await writeJsonVersion(`zakazky/${zid}/`, { id: zid, ...data, vytvorene: data.vytvorene || casZ(zid) });
+/** Uložené údaje zákazky { stare: verzie v úložisku, data } alebo null, ak zákazka nie je. */
+export async function metaZakazky(zid, vsetky) {
+  const stare = vPriecinku(vsetky, `zakazky/${zid}/`);
+  if (!stare.length) return null;
+  return { stare, data: await readJson(newest(stare)) };
 }
 
-export async function nacitajZakazku(zid) {
-  const blobs = await listAll(`zakazky/${zid}/`);
-  if (!blobs.length) return null;
-  const naj = blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))[0];
-  return readJson(naj);
+/** Uloží údaje zákazky ako novú verziu. Vráti výpis po zápise. */
+export async function ulozZakazku(zid, data, vsetky) {
+  const stare = vPriecinku(vsetky, `zakazky/${zid}/`);
+  const ulozeny = await writeJsonVersion(`zakazky/${zid}/`, { id: zid, ...data, vytvorene: data.vytvorene || casZ(zid) }, stare);
+  return poZapise(vsetky, stare, ulozeny);
 }
 
-/** Nastaví alebo zruší označenie fotky (pred / po). */
-export async function nastavOznacenie(zid, fid, hodnota) {
-  const d = await nacitajZakazku(zid);
-  if (!d) return null;
-  const oznacenia = { ...(d.oznacenia || {}) };
-  if (OZNACENIA.includes(hodnota)) oznacenia[fid] = hodnota;
-  else delete oznacenia[fid];
-  await ulozZakazku(zid, { ...d, oznacenia });
-  return oznacenia;
+/**
+ * Nastaví alebo zruší označenia fotiek naraz: { <fid>: 'pred' | 'po' | '' }.
+ * Vráti { oznacenia, vsetky } alebo null, ak zákazka neexistuje.
+ */
+export async function nastavOznacenia(zid, zmeny, vsetky) {
+  const m = await metaZakazky(zid, vsetky);
+  if (!m) return null;
+  const oznacenia = { ...(m.data.oznacenia || {}) };
+  for (const [fid, hodnota] of Object.entries(zmeny || {})) {
+    if (!FID.test(fid)) continue;
+    if (OZNACENIA.includes(hodnota)) oznacenia[fid] = hodnota;
+    else delete oznacenia[fid];
+  }
+  return { oznacenia, vsetky: await ulozZakazku(zid, { ...m.data, oznacenia }, vsetky) };
 }
 
-export async function zmazZakazku(zid) {
+/** Zmaže zákazku aj s fotkami (mazanie je zadarmo). Vráti { pocet, vsetky }. */
+export async function zmazZakazku(zid, vsetky) {
   const vsetko = [
-    ...(await listAll(`zakazky/${zid}/`)),
-    ...(await listAll(`galeria/${zid}/`)),
-    ...(await listAll(`nahlady/${zid}/`)),
+    ...vPriecinku(vsetky, `zakazky/${zid}/`),
+    ...vPriecinku(vsetky, `galeria/${zid}/`),
+    ...vPriecinku(vsetky, `nahlady/${zid}/`),
   ];
   for (let i = 0; i < vsetko.length; i += 500) await del(vsetko.slice(i, i + 500).map((b) => b.url));
-  return vsetko.length;
+  return { pocet: vsetko.length, vsetky: poZapise(vsetky, vsetko) };
 }
 
-/** Zmaže najstaršie zákazky nad limit. Vráti zoznam zmazaných { id, nazov }. */
-export async function orezNaLimit(limit) {
-  const ids = await idZakaziek();
-  const navyse = ids.slice(Math.max(1, limit));
+/** Zmaže najstaršie zákazky nad limit. Vráti { zmazane: [{ id, nazov }], vsetky }. */
+export async function orezNaLimit(limit, vsetky) {
+  const navyse = idZakaziek(vsetky).slice(Math.max(1, limit));
   const zmazane = [];
+  let zvysok = vsetky;
   for (const zid of navyse) {
     let nazov = '';
-    try { nazov = (await nacitajZakazku(zid))?.nazov || ''; } catch { /* aj tak zmažeme */ }
-    await zmazZakazku(zid);
+    try { nazov = (await metaZakazky(zid, zvysok))?.data?.nazov || ''; } catch { /* aj tak zmažeme */ }
+    zvysok = (await zmazZakazku(zid, zvysok)).vsetky;
     zmazane.push({ id: zid, nazov });
   }
-  return zmazane;
+  return { zmazane, vsetky: zvysok };
 }
 
 /**
@@ -85,7 +97,7 @@ export async function orezNaLimit(limit) {
  * `vsetky` = hotový výpis celého úložiska (ušetrí operácie list); bez neho sa vypíšu priečinky zvlášť.
  */
 export async function nacitajGaleriu(vsetky) {
-  const vypis = (prefix) => (vsetky ? vsetky.filter((b) => b.pathname.startsWith(prefix)) : listAll(prefix));
+  const vypis = (prefix) => (vsetky ? vPriecinku(vsetky, prefix) : listAll(prefix));
   const [meta, plne, nahlady] = await Promise.all([vypis('zakazky/'), vypis('galeria/'), vypis('nahlady/')]);
   const najnovsie = new Map();
   for (const b of meta) {

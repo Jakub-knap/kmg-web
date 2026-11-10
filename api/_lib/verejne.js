@@ -53,16 +53,17 @@ export function verejnaFirma(f = {}) {
   };
 }
 
-/** Galéria a nastavenia z jedného výpisu úložiska (1 operácia na 1 000 súborov). */
-export async function nacitajNazivo() {
-  const vsetky = await listAll('');
+/** Galéria a nastavenia z jedného výpisu úložiska (1 operácia na 1 000 súborov).
+ *  `vsetky` = výpis, ktorý už volajúci má (vtedy žiadna operácia list). */
+export async function nacitajNazivo(vsetky) {
+  vsetky ??= await listAll('');
   const [galeria, nastavenia] = await Promise.all([nacitajGaleriu(vsetky), loadSettings(vsetky)]);
   return { galeria, nastavenia };
 }
 
 /** Zostaví a uloží verejný súbor. Volá sa po každej zmene v aplikácii. */
-export async function obnovVerejne() {
-  const { galeria, nastavenia } = await nacitajNazivo();
+export async function obnovVerejne(vsetky) {
+  const { galeria, nastavenia } = await nacitajNazivo(vsetky);
   const data = {
     ...galeria,
     max: nastavenia.galeria.maxZakaziek,
@@ -80,9 +81,9 @@ export async function obnovVerejne() {
 }
 
 /** Obnovenie, ktoré nesmie pokaziť hlavnú akciu (fotka je nahratá, aj keď sa web neobnoví). */
-export async function skusObnovit() {
+export async function skusObnovit(vsetky) {
   try {
-    await obnovVerejne();
+    await obnovVerejne(vsetky);
     return true;
   } catch (e) {
     console.error('Verejný súbor webu sa nepodarilo obnoviť', e);

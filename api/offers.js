@@ -5,10 +5,9 @@
 //   DELETE /api/offers?id=2026-001
 import { randomUUID } from 'node:crypto';
 import { deny, fail, json } from './_lib/auth.js';
+import { ID_PONUKY as ID, ponukyPodlaCisla as groupById, ROOT_PONUKY as ROOT, zoznamPonuk } from './_lib/doklady.js';
 import { listAll, newest, put, readJson, removeFolder, del } from './_lib/store.js';
 
-const ROOT = 'ponuky/';
-const ID = /^\d{4}-\d{3,4}$/;
 const STAVY = ['rozpracovaná', 'odoslaná', 'prijatá', 'zamietnutá'];
 
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -17,17 +16,6 @@ const num = (v, def = 0) => {
   const n = Number(String(v ?? '').replace(',', '.'));
   return Number.isFinite(n) ? n : def;
 };
-
-function groupById(blobs) {
-  const map = new Map();
-  for (const b of blobs) {
-    const id = b.pathname.slice(ROOT.length).split('/')[0];
-    if (!ID.test(id)) continue;
-    if (!map.has(id)) map.set(id, []);
-    map.get(id).push(b);
-  }
-  return map;
-}
 
 function spocitaj(p) {
   const medzisucet = r2(p.polozky.reduce((s, x) => s + r2(x.mnozstvo * x.cena), 0));
@@ -74,18 +62,8 @@ export async function GET(request) {
       if (!blob) return fail(404, 'Ponuka sa nenašla.');
       return json(await readJson(blob));
     }
-    const groups = groupById(await listAll(ROOT));
-    const ponuky = await Promise.all(
-      [...groups.values()].map(async (blobs) => {
-        try {
-          const p = await readJson(newest(blobs));
-          return { id: p.id, datum: p.datum, stav: p.stav, zakaznik: p.zakaznik?.meno || '', predmet: p.predmet || '', spolu: p.sucty?.spolu ?? 0, upravene: p.upravene };
-        } catch {
-          return null;
-        }
-      }),
-    );
-    return json({ ponuky: ponuky.filter(Boolean).sort((a, b) => b.id.localeCompare(a.id)) });
+    const ponuky = await zoznamPonuk(await listAll(ROOT));
+    return json({ ponuky });
   } catch (e) {
     console.error(e);
     return fail(500, 'Ponuky sa nepodarilo načítať. Skontrolujte pripojenie Blob úložiska.');
