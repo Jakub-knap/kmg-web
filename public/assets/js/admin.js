@@ -1608,8 +1608,8 @@
     datumVystavenia: f.datumVystavenia, datumSplatnosti: f.datumSplatnosti, spolu: f.sucty?.spolu ?? 0,
     zaplatena: Boolean(f.zaplatena), datumZaplatenia: f.datumZaplatenia || '',
   });
-  function zapisSuhrn(f) {
-    stav.faktury = [suhrnFaktury(f), ...stav.faktury.filter((x) => x.id !== f.id)].sort((a, b) => b.id.localeCompare(a.id));
+  function zapisSuhrn(f, stareId = '') {
+    stav.faktury = [suhrnFaktury(f), ...stav.faktury.filter((x) => x.id !== f.id && x.id !== stareId)].sort((a, b) => b.id.localeCompare(a.id));
     vykresliFaktury();
     vykresliZoznam();
     aktualizujTlacidloFaktury();
@@ -1635,6 +1635,22 @@
     } finally {
       if (btn) btn.disabled = false;
     }
+  }
+
+  const CISLO_FAKTURY = /^[1-9]\d{0,9}$/;
+  function dalsieCisloFaktury() {
+    const rok = new Date().getFullYear();
+    const vzor = new RegExp(`^${rok}(\\d{3,4})$`);
+    let max = 0;
+    let sirka = 3;
+    for (const { id } of stav.faktury) {
+      const m = vzor.exec(id);
+      if (m && Number(m[1]) >= max) {
+        max = Number(m[1]);
+        sirka = Math.max(3, m[1].length);
+      }
+    }
+    return `${rok}${String(max + 1).padStart(sirka, '0')}`;
   }
 
   function novaFaktura(p) {
@@ -1717,6 +1733,9 @@
     btn.classList.toggle('tlacidlo--zaplatena', !f.zaplatena);
     btn.classList.toggle('tlacidlo--obrys', f.zaplatena);
     fEditor.classList.toggle('faktura--zaplatena', Boolean(f.zaplatena));
+    // číslo zaplatenej faktúry sa už nemení
+    $('[data-f-cislo]').disabled = Boolean(f.zaplatena);
+    $('[data-f-cislo-napoveda]').hidden = Boolean(f.zaplatena);
   }
 
   function ukazFakturu() {
@@ -1735,6 +1754,9 @@
       else if (F_CISELNE.includes(el.name)) el.value = v ? vstup(v) : '';
       else el.value = v ?? '';
     }
+    const cislo = $('[data-f-cislo]');
+    cislo.value = f.cislo ?? f.id ?? '';
+    cislo.placeholder = f.id ? '' : `automaticky ${dalsieCisloFaktury()}`;
     $('[data-f-zmazat]').hidden = !f.id;
     $('[data-f-ulozit]').textContent = f.id ? 'Uložiť' : 'Vystaviť';
     ukazStavPlatby();
@@ -1808,11 +1830,19 @@
     const f = stav.faktura;
     if (!String(f.odberatel?.meno || '').trim()) throw new Error('Doplňte odberateľa (meno alebo firmu).');
     if (!f.polozky.some((x) => String(x.nazov || '').trim())) throw new Error('Faktúra musí mať aspoň jednu položku.');
+    const cislo = String(f.cislo ?? '').replace(/\s/g, '');
+    if (cislo && !CISLO_FAKTURY.test(cislo)) {
+      throw new Error('Číslo faktúry môže mať len číslice (najviac 10, nesmie začínať nulou) – je to aj variabilný symbol.');
+    }
     const nova = !f.id;
-    const ulozena = await api('/api/faktury', { method: 'POST', body: f });
+    const stareId = f.id;
+    const ulozena = await api('/api/faktury', { method: 'POST', body: { ...f, cislo } });
     stav.faktura = ulozena;
     stav.fakturaZmenena = false;
-    zapisSuhrn(ulozena);
+    zapisSuhrn(ulozena, stareId);
+    $('[data-f-cislo]').value = ulozena.id;
+    $('[data-f-cislo]').placeholder = '';
+    if (stareId && stareId !== ulozena.id) oznam(`Faktúra ${stareId} má teraz číslo ${ulozena.id}`);
     $('[data-faktura-nadpis]').textContent = `Faktúra ${ulozena.id}`;
     $('[data-faktura-info]').textContent = `Variabilný symbol ${ulozena.id}${ulozena.ponuka ? ` · z ponuky ${ulozena.ponuka}` : ''}`;
     $('[data-f-zmazat]').hidden = false;
@@ -1826,8 +1856,10 @@
     const btn = $('[data-f-ulozit]');
     btn.disabled = true;
     try {
+      const stareId = stav.faktura.id;
       const nova = await ulozFakturu();
-      oznam(nova ? `Faktúra ${stav.faktura.id} je vystavená` : 'Zmeny uložené');
+      if (nova) oznam(`Faktúra ${stav.faktura.id} je vystavená`);
+      else if (stareId === stav.faktura.id) oznam('Zmeny uložené');
     } catch (err) {
       oznam(err.message, true);
     } finally {

@@ -105,7 +105,11 @@ E-mail `kmg.stav@gmail.com` beží na Gmaile, takže zmena DNS ho neovplyvní.
   - **Nezaplatené** – zoradené podľa splatnosti, po splatnosti sú červené. Tlačidlo **Zaplatená** faktúru presunie do archívu.
   - **Archív – zaplatené** – zelené, s dátumom zaplatenia. Omylom zaplatenú vrátite v detaile faktúry.
   Faktúra preberie z ponuky zákazníka, predmet a položky; v editore sa dá všetko upraviť (pri firme doplňte IČO/DIČ).
-  Číslo dostane pri **Vystaviť**: 2026001, 2026002… (rovnaké je aj variabilným symbolom). Splatnosť je podľa
+  Číslo dostane pri **Vystaviť**: 2026001, 2026002… (rovnaké je aj variabilným symbolom). Do poľa **Číslo faktúry**
+  sa dá zadať aj vlastné číslo – napr. keď ste tento rok už fakturovali mimo aplikácie, zadajte nasledujúce (2026016)
+  a ďalšie faktúry budú automaticky pokračovať od neho (2026017…). Nový rok začne sám od RRRR001. Číslo nezaplatenej
+  faktúry sa dá zmeniť aj neskôr (prečíslovanie); duplicitné číslo aplikácia nedovolí a číslo zaplatenej sa už nemení.
+  Číslo môže mať len číslice (najviac 10), lebo je to aj variabilný symbol. Splatnosť je podľa
   nastavenia (predvolene 14 dní). **Stiahnuť PDF / Poslať** vytvorí faktúru s QR kódom **PAY by square** – zákazník
   ho naskenuje v aplikácii banky a platba sa vyplní sama. Zaplatená faktúra má v PDF pečiatku „UHRADENÉ“ a QR kód nemá.
   Údaje dodávateľa sa do faktúry zapíšu pri uložení; kým nie je zaplatená, každé uloženie ich obnoví podľa nastavení.
@@ -192,7 +196,8 @@ Prihlásenie vydrží 180 dní. Bez internetu sa aplikácia otvorí, ale fotky a
   staršie fotky `galeria/<kategoria>/<fid>.jpg`, `nastavenia/*.json` (firma, `cenniky[]`, galéria),
   `ponuky/<cislo>/*.json`, `faktury/<cislo>/*.json` (so snímkou údajov dodávateľa). Každé uloženie vytvorí novú
   verziu súboru a staré zmaže.
-- Faktúry: `api/faktury.js` (GET zoznam/detail, POST uloženie a číslovanie RRRRNNN, PUT stav platby, DELETE).
+- Faktúry: `api/faktury.js` (GET zoznam/detail, POST uloženie a číslovanie RRRRNNN alebo ručné `cislo` vrátane
+  prečíslovania nezaplatenej, PUT stav platby, DELETE).
   QR platba: `public/assets/js/qr-platba.js` – vlastný QR enkóder a PAY by square 1.2.0 (CRC32, LZMA1 lc=3 lp=0 pb=2
   len s literálmi a koncovou značkou, base32hex), bez externých knižníc; overené dekódovaním cez Python `lzma` a OpenCV.
 - Aplikácia pri otvorení volá len `GET /api/sprava` (galéria, nastavenia, ponuky, faktúry z jedného výpisu úložiska).

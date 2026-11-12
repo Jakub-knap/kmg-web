@@ -2,6 +2,8 @@
 //   GET    /api/faktury               – zoznam faktúr (súhrn)
 //   GET    /api/faktury?id=2026001    – jedna faktúra
 //   POST   /api/faktury               – uloženie; nová faktúra dostane ďalšie číslo (2026001, 2026002…)
+//                                        alebo `cislo` zadané ručne; `cislo` pri uloženej nezaplatenej
+//                                        faktúre ju prečísluje (409, ak číslo už existuje)
 //   PUT    /api/faktury?id=2026001    – len stav platby { zaplatena, datumZaplatenia }
 //   DELETE /api/faktury?id=2026001
 //
@@ -54,6 +56,27 @@ function dodavatel(firma = {}) {
     web: text(firma.web, 120),
   };
 }
+
+/**
+ * Ďalšie číslo v poradí pre daný rok: najvyššie RRRRNNN (alebo RRRRNNNN) + 1.
+ * Ručne zadané číslo v tomto tvare (napr. 2026016) poradie posunie – ďalšie bude 2026017.
+ */
+function dalsieCislo(kluce, rok) {
+  const vzor = new RegExp(`^${rok}(\\d{3,4})$`);
+  let max = 0;
+  let sirka = 3;
+  for (const k of kluce) {
+    const m = vzor.exec(k);
+    if (m && Number(m[1]) >= max) {
+      max = Number(m[1]);
+      sirka = Math.max(3, m[1].length);
+    }
+  }
+  return `${rok}${String(max + 1).padStart(sirka, '0')}`;
+}
+
+const obsadene = async (cislo) => (await listAll(`${ROOT}${cislo}/`)).length > 0;
+const OBSADENE = (cislo) => `Faktúra s číslom ${cislo} už existuje. Zadajte iné číslo.`;
 
 function clean(input, id, dod, splatnostDni = 14) {
   const o = input?.odberatel || {};
@@ -127,6 +150,11 @@ export async function POST(request) {
   } catch {
     return fail(400, 'Faktúra neprišla celá.');
   }
+  // ručne zadané číslo (prázdne = ďalšie v poradí)
+  const cislo = String(body?.cislo ?? '').replace(/\s/g, '');
+  if (cislo && !ID.test(cislo)) {
+    return fail(400, 'Číslo faktúry môže mať len číslice (najviac 10, nesmie začínať nulou) – je to aj variabilný symbol.');
+  }
   try {
     let id = body?.id;
     let stare = [];
@@ -135,16 +163,23 @@ export async function POST(request) {
       if (!ID.test(id)) return fail(400, 'Neplatné číslo faktúry.');
       stare = await listAll(`${ROOT}${id}/`);
       if (!stare.length) return fail(404, 'Faktúra už neexistuje.');
-      if (body.zaplatena) {
+      const prec = cislo && cislo !== id;
+      if (body.zaplatena || prec) {
+        const ulozena = await readJson(newest(stare)).catch(() => null);
         // zaplatená faktúra si drží údaje dodávateľa z čias vystavenia
-        dod = (await readJson(newest(stare)).catch(() => null))?.dodavatel || null;
+        if (body.zaplatena) dod = ulozena?.dodavatel || null;
+        if (prec) {
+          if (body.zaplatena || ulozena?.zaplatena) return fail(409, 'Číslo zaplatenej faktúry sa už nedá zmeniť.');
+          if (await obsadene(cislo)) return fail(409, OBSADENE(cislo));
+          id = cislo; // nová verzia pod novým číslom, staré (stare) sa po uložení zmažú
+        }
       }
+    } else if (cislo) {
+      if (await obsadene(cislo)) return fail(409, OBSADENE(cislo));
+      id = cislo;
     } else {
       const rok = new Date().getFullYear();
-      const cisla = [...podlaCisla(await listAll(`${ROOT}${rok}`)).keys()]
-        .filter((k) => k.startsWith(String(rok)))
-        .map((k) => Number(k.slice(4)));
-      id = `${rok}${String((cisla.length ? Math.max(...cisla) : 0) + 1).padStart(3, '0')}`;
+      id = dalsieCislo(podlaCisla(await listAll(`${ROOT}${rok}`)).keys(), rok);
     }
     const { firma } = await loadSettings();
     if (!dod) dod = dodavatel(firma);

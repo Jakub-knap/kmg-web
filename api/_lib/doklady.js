@@ -5,7 +5,8 @@ import { newest, readJson } from './store.js';
 export const ROOT_PONUKY = 'ponuky/';
 export const ROOT_FAKTURY = 'faktury/';
 export const ID_PONUKY = /^\d{4}-\d{3,4}$/;
-export const ID_FAKTURY = /^\d{7,8}$/;
+// číslo faktúry = variabilný symbol: len číslice, najviac 10, nezačína nulou (automaticky RRRRNNN)
+export const ID_FAKTURY = /^[1-9]\d{0,9}$/;
 
 function podlaId(blobs, root, vzor) {
   const map = new Map();
